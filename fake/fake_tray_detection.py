@@ -33,4 +33,4 @@ class FakeTrayDetection():
         trays = iter(Tray.query.all())
         for t in trays:
             time.sleep(2)
-            yield trays.__next__()
+            yield t

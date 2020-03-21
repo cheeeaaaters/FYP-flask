@@ -1,9 +1,10 @@
-
 <div id="test"> Hello World </div>
 <script>
     var test_socket = io('/tray_detection_step');
-    test_socket.on('display', function(i) {        
-        $('#test').prepend(i+"<br/>")
+    test_socket.on('display', function(tray) {    
+        console.log(tray)    
+        console.log(tray.path)
+        $('#test').html(tray.path)
     });
     test_socket.on('finish', function() {
         $('#test').html("FINISH")

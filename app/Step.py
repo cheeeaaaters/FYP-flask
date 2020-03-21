@@ -25,8 +25,10 @@ class Step():
                 self.coroutine = self.step_process()
                 break
             except:
+                print('BBBBBBUUUUUUUUUUGGGGGGGGGGG')
                 break
-        self.stop()        
+        if self.running:
+            self.stop()        
 
     #This function will be called when you press the stop button
     def stop(self):
