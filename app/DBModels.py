@@ -11,15 +11,15 @@ class Video(db.Model):
 class Tray(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String(120), unique=True, nullable=False)
-    segmentation_path = db.Column(db.String(120), unique=True)   
-    #segmentation_info =  db.relationship('Tray', backref='tray', lazy=True)
-    #segmentation_info_id = db.Column(db.Integer, db.ForeignKey('segmentation_info.id'))
-    #object_id = db.Column(db.Integer, nullable=False)
+    #segmentation_path = db.Column(db.String(120), unique=True)   
+    segmentation_info =  db.relationship('SegmentationInfo', backref='tray', lazy=True)
+    segmentation_info_id = db.Column(db.Integer, db.ForeignKey('segmentation_info.id'))
+    object_id = db.Column(db.Integer, nullable=False)
     ocr = db.Column(db.String(4))
     eaten = db.Column(db.Boolean)
     dish = db.Column(db.String(20), index=True)
     area = db.Column(db.String(20), nullable=False)
-    date_time = db.Column(db.DateTime, unique=True, index=True)
+    date_time = db.Column(db.DateTime, index=True)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
     pair = db.relationship('Pair')
     pair_id = db.Column(db.Integer, db.ForeignKey('pair.id'))
@@ -34,9 +34,8 @@ class Pair(db.Model):
     after_tray = db.relationship('Tray', uselist=False)
 
     def __repr__(self):
-        return '<tray group> %r' % self.ocr
+        return '<pair> %r' % self.ocr
 
-'''
 class SegmentationInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     segmentation_path = db.Column(db.String(120), unique=True, nullable=False)
@@ -44,7 +43,9 @@ class SegmentationInfo(db.Model):
     rice = db.Column(db.Integer, nullable=False)
     meat = db.Column(db.Integer, nullable=False)
     vegetable = db.Column(db.Integer, nullable=False)
-'''    
+
+    def __repr__(self):
+        return '<segmentation> %r' % self.segmentation_path
 
 if __name__ == '__main__':
     db.metadata.clear()

@@ -5,6 +5,12 @@ from .socketio_helper import bind_socketio
 from fake.fake_tray_detection import FakeTrayDetection
 from app import db
 from app.DBModels import Video, Tray
+from datetime import date
+import sys
+
+path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
+sys.path.insert(1, path_to_yolo)
+import object_tracker_3 as Yolo
 
 class TrayDetectionStep(Step):
 
@@ -18,36 +24,43 @@ class TrayDetectionStep(Step):
     def step_process(self):
         print("Start Process...")
 
-        #TODO: init yolov3
-        #TODO: Optionally call js to display loading bar  
-
         #get the inputs
         #TODO: Optionally can make video also an input stream
         videos = Video.query.all()
 
-        #TODO: pass the input to yolov3
-        #preresquisite: usage of yield
-        #outputStream is a generator        
-        outputStream = FakeTrayDetection.process(videos)
+        for video in videos:        
+            #TODO: pass the input to yolov3
+            #preresquisite: usage of yield
+            #outputStream is a generator        
+            outputStream = Yolo.process(video)    
+            (area, date_start, date_end) = self.convert_video(video)        
+            delta = date_end - date_start
 
-        #yolov3 returns:
-        #tray with reference to video, area, time, image path, object_id(optional)
-        #can be any form you feel convenient 
-        for tray in outputStream:
-            #TODO: update the html, call js 
-            emit('display', self.convert_to_json(tray), namespace='/tray_detection_step')
-            #Optional: attach a callback when client receives my signal
-            #emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
-            #Example use case: when client internet dies, we may want to stop the process.
+            #yolov3 returns:
+            #can be any form you feel convenient 
+            for tray in outputStream:
 
-            #Optional: this code could be inside the callback
-            #TODO: insert to database
-            db.session.add(tray)
-            db.session.commit()
+                if tray["path"] != None:
+                    #TODO: update the html, call js 
+                    emit('display', self.convert_to_json(tray), namespace='/tray_detection_step')
+                    #Optional: attach a callback when client receives my signal
+                    #emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
+                    #Example use case: when client internet dies, we may want to stop the process.
 
-            print("One Loop Pass")
-            #It will wait on this yield statement
-            yield
+                    #Optional: this code could be inside the callback
+                    #TODO: insert to database
+                    new_tray = Tray(path=tray["path"],
+                                    object_id=tray["obj_id"],
+                                    video=video,
+                                    area=area,
+                                    date_time=date_start+delta*tray["percentage"])
+                    db.session.add(tray)
+                    db.session.commit()
+
+                    print("One Loop Pass")
+
+                #It will wait on this yield statement
+                yield
 
         #TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/tray_detection_step')
@@ -67,8 +80,44 @@ class TrayDetectionStep(Step):
 
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, tray):        
-        return tray.id
-    
+        return {
+            'path': tray.path,
+            'percentage': tray.percentage
+        }
+
+    def convert_video(self, video):        
+        path_parts = os.path.normpath(video.path).split(os.path.sep)
+        name = path_parts[-1].split('.')[0]
+        dates = path_parts[-2]
+        area = path_parts[-3]
+
+        date_parts = dates.split('_')
+        year = int(date_parts[1])
+        month = int(date_parts[2])
+        day = int(date_parts[3])
+
+        parts = name.split('-')
+        start = parts[-2]
+        end = parts[-1]
+        def get_hour_min(i):
+            minutes = int(i)/60
+            hours = int(minutes)//60
+            rmd = int(minutes%60)
+            if rmd < 30:
+                hour = 7 + hours
+                minute = 30 + rmd
+            else:
+                hour = 8 + hours
+                minute = (30 + rmd)%60
+            return (hour, minute)
+
+        hour_start, min_start = get_hour_min(start) 
+        date_start = date(year, month, day, hour_start, min_start)
+        hour_end, min_end = get_hour_min(end) 
+        date_end = date(year, month, day, hour_end, min_end)
+        
+        return (area, date_start, date_end)
+
     #bind_socketio is used to deal with messages sent from js
     #Example use case: configuration buttons specifc to the step
     @bind_socketio('/tray_detection_step')
