@@ -1,0 +1,16 @@
+
+.gallery_container{
+    width: 100%;
+    text-align: center;
+}
+
+.gallery{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.img_wrapper{
+    margin: 10px;
+}
+
+  

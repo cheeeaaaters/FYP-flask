@@ -1,0 +1,11 @@
+
+<div id="test"> Hello World </div>
+<script>
+    var test_socket = io('/tray_detection_step');
+    test_socket.on('display', function(i) {        
+        $('#test').html(i)
+    });
+    test_socket.on('finish', function() {
+        $('#test').html("FINISH")
+    });
+</script>

@@ -1,0 +1,36 @@
+.horizontal-container{
+    margin-top: 20px;
+    padding-bottom: 20px;
+    width: 100%;
+    height: fit-content;
+    border-bottom: 1px solid #bbb;
+}
+
+.horizontal-stepper{
+    
+}
+
+.horizontal-stepper li{
+    width: 100px;
+    float: left;
+    list-style-type: none;
+    text-align: center;
+}
+
+.horizontal-stepper li:before{
+    width: 40px;
+    height: 40px; 
+    display: block;
+    text-align: center;
+    content: '';
+    margin: 0 auto 10px auto;
+    border-radius: 50%;
+    background-color: #6d8fb3;
+    position: relative;
+    line-height: 30px;
+}
+
+.transparent-button{
+    background-color: transparent;
+    outline: none;
+}

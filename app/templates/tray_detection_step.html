@@ -1,0 +1,9 @@
+<div class="gallery_container">
+<div class="gallery">
+    {% for i in list %}
+    <div class="img_wrapper">
+        <img src="{{url_for('static', filename='images/food.jpg')}}" width="100px"/>        
+    </div>
+    {% endfor %}
+</div>
+</div>

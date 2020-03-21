@@ -1,0 +1,58 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/base_min.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/tray_detection_step.css')}}">
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    socket.on('connect', function() {
+        socket.emit('step_process_2');
+    });
+    socket.on('connect', function() {
+        socket.emit('step_process', 'asdadsadasd');
+    });
+</script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/main_content_manager.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/nav_buttons.js')}}"></script>
+{% endblock %}
+
+{% block navbar %}
+<nav class="fixed-top bg-dark shadow wrapper">
+    <span id="navbar-text">FYP TM4</span> 
+    <a href='#' id="start_button">
+        <img src="{{url_for('static', filename='icons/play-fill.svg')}}"/>     
+    </a>
+    <a href="#" id="pause_button">
+        <img src="{{url_for('static', filename='icons/pause-fill.svg')}}"/>    
+    </a>
+</nav>
+{% endblock %}
+
+{% block title %}
+    Food Waste Analysis
+{% endblock %}
+
+{% block content %}
+
+<div class="wrapper">    
+    <nav id="sidebar">
+    </nav>
+    <div class="vertical_wrapper">
+        {% block step_progress_bar %}
+        {% endblock %}
+        <div class="wrapper" id="main_content">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
