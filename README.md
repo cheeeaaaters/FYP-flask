@@ -52,6 +52,10 @@ Window:
 >Press cltr+shift+R on chrome
 
 ## 4. Where to add the js/css?
-The styles block inside base_min.html
+> The styles block inside base_min.html
+
+## 5. why need yield?
+> To make the function a coroutine, so that it can be paused and send a signal to the cilent side.
+
 
 
