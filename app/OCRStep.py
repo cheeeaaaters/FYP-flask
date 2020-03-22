@@ -1,8 +1,19 @@
 from .Step import Step
 from flask_socketio import emit
+from flask import render_template
 from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray
+import sys, os
+import eventlet
+
+path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
+sys.path.insert(1, path_to_yolo)
+path_to_ocr = '/home/ubuntu/CanteenPreProcessing/OCR/main'
+sys.path.insert(1, path_to_ocr)
+import preprocessing as PreProcessing
+import demo as OCR
+import count as Polling
 
 class OCRStep(Step):
 
@@ -10,39 +21,46 @@ class OCRStep(Step):
         super().__init__()
         self.context["step_id"] = 1
         self.context["step_name"] = "ocr_step"
+        self.coroutine = self.step_process()
         print("OCR Step Created")
 
     def step_process(self):
         print("Start Process...")
 
-        #TODO: init OCR
-        #TODO: Optionally call js to display loading bar  
-
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
         #input_trays = query.all()
-        input_trays = query.filter_by(ocr == None)        
-
+        input_trays = query.filter_by(ocr=None).all()       
+        '''
         #TODO: pass the input to OCR        
-        outputStream = []
-        
-        #OCR returns information about the input image, and the ocr
-        #can be any form you feel convenient 
-        for (input, info) in outputStream:
-            #TODO: update the html, call js 
-            emit('display', self.convert_to_json(input), namespace='/ocr_step')
-            #Optional: attach a callback when client receives my signal
-            #emit('display', self.convert_to_json(input), namespace='/ocr_step', callback=something)
-            
-            #TODO: update input using info
-            #input.ocr = ??
-            db.session.commit()
-
-            print("One Loop Pass")
-            #It will wait on this yield statement
+        outputStream = PreProcessing.process(input_trays)
+        for info in outputStream:
+            emit('display', info, namespace='/ocr_step')
+            eventlet.sleep(0)
             yield
 
+        self.stop()
+        yield
+        
+        outputStream = OCR.process()
+        for info in outputStream:
+            emit('display', info, namespace='/ocr_step')
+            eventlet.sleep(0)
+            yield
+        
+        self.stop()
+        yield
+        '''
+        outputStream = Polling.process()
+        for info in outputStream:
+            emit('display', info, namespace='/ocr_step')
+            eventlet.sleep(0)
+            pattern = info['regex']
+            for target in Tray.query.filter(Tray.path.like('%'+pattern+'%')).filter_by(object_id=info['object_id']).all():
+                target.ocr = info['ocr']
+            yield
+        
         #TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/ocr_step')
 
@@ -57,7 +75,7 @@ class OCRStep(Step):
         super().stop()     
 
     def render(self):
-        return self.context["step_name"]
+        return render_template('test_step.html')
 
     #TODO: convert input to json to pass to js
     def convert_to_json(self, input):        

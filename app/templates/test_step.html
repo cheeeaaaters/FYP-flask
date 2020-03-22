@@ -1,3 +1,4 @@
+
 <div id="test"> Hello World </div>
 <script>
     var test_socket = io('/tray_detection_step');
@@ -9,4 +10,14 @@
     test_socket.on('finish', function() {
         $('#test').html("FINISH")
     });
+
+    var test_socket2 = io('/ocr_step');
+    test_socket2.on('display', function(info) {    
+        console.log(info)    
+        $('#test').html(info.percentage)
+    });
+    test_socket2.on('finish', function() {
+        $('#test').html("FINISH")
+    });
+
 </script>
