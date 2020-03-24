@@ -24,10 +24,10 @@ db = SQLAlchemy(app)
 
 from app import socketio_helper
 from app import DBModels
-from app import Step
-from app import TrayDetectionStep
-from app import OCRStep
-from app import ClassifyEatenStep
+#from app import Step
+#from app import TrayDetectionStep
+#from app import OCRStep
+#from app import ClassifyEatenStep
 
 socketio_helper.add_socketio()
 

@@ -20,4 +20,13 @@
         $('#test').html("FINISH")
     });
 
+    var test_socket3 = io('/classify_eaten_step');
+    test_socket3.on('display', function(info) {    
+        console.log(info)    
+        $('#test').html(info.percentage)
+    });
+    test_socket3.on('finish', function() {
+        $('#test').html("FINISH")
+    });
+
 </script>

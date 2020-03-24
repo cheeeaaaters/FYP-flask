@@ -32,7 +32,7 @@ class OCRStep(Step):
         #TODO: Optional, may let user configure filter or not
         #input_trays = query.all()
         input_trays = query.filter_by(ocr=None).all()       
-        '''
+        
         #TODO: pass the input to OCR        
         outputStream = PreProcessing.process(input_trays)
         for info in outputStream:
@@ -51,7 +51,7 @@ class OCRStep(Step):
         
         self.stop()
         yield
-        '''
+        
         outputStream = Polling.process()
         for info in outputStream:
             emit('display', info, namespace='/ocr_step')

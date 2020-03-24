@@ -1,8 +1,15 @@
 from .Step import Step
 from flask_socketio import emit
+from flask import render_template
 from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray
+import sys, os
+import eventlet
+
+path_to_eaten_classifier = '/home/ubuntu/eaten'
+sys.path.insert(1, path_to_eaten_classifier)
+import eaten_main as Classifier 
 
 class ClassifyEatenStep(Step):
 
@@ -10,13 +17,11 @@ class ClassifyEatenStep(Step):
         super().__init__()
         self.context["step_id"] = 2
         self.context["step_name"] = "classify_eaten_step"
+        self.coroutine = self.step_process()
         print("Classify Eaten Step Created")
 
     def step_process(self):
         print("Start Process...")
-
-        #TODO: init classfier
-        #TODO: Optionally call js to display loading bar  
 
         #get the inputs        
         query = db.session.query(Tray)
@@ -25,18 +30,17 @@ class ClassifyEatenStep(Step):
         #input_trays = query.filter_by(ocr == None)        
 
         #TODO: pass the input to classifier        
-        outputStream = None
+        outputStream = Classifier.process(input_trays, backref=True)
         
         #classifier returns information about the input image, and eaten
         #can be any form you feel convenient 
         for (input, info) in outputStream:
             #TODO: update the html, call js 
-            emit('display', self.convert_to_json(input), namespace='/classify_eaten_step')
-            #Optional: attach a callback when client receives my signal
-            #emit('display', self.convert_to_json(input), namespace='/classify_eaten_step', callback=something)
-
+            emit('display', self.convert_to_json(info), namespace='/classify_eaten_step')
+            eventlet.sleep(0)
+          
             #TODO: update input using info
-            #input.eaten = ??
+            input.eaten = (info["preds"][0].item() == 1)
             db.session.commit()
 
             print("One Loop Pass")
@@ -57,11 +61,15 @@ class ClassifyEatenStep(Step):
         super().stop()     
 
     def render(self):
-        return 'Work In Progress.'
+        return render_template('test_step.html')
 
     #TODO: convert tray to json to pass to js
-    def convert_to_json(self, input):        
-        return {}
+    def convert_to_json(self, input):            
+        return {
+            "eaten": (input["preds"][0].item() == 1),
+            "infer_time": input["infer_time"],
+            "percentage": input["percentage"]
+        }
 
     @bind_socketio('/classify_eaten_step')
     def test(self, input):
