@@ -5,25 +5,29 @@
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/base_min.css')}}">
 <link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/data_visualization_step.css')}}">
+<link rel="stylesheet"
       href="{{url_for('.static', filename='styles/tray_detection_step.css')}}">
 {% endblock %}
 
 {% block scripts %}
 {{super()}}
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io();
-    socket.on('connect', function() {
-        socket.emit('step_process_2');
-    });
-    socket.on('connect', function() {
-        socket.emit('step_process', 'asdadsadasd');
-    });
-</script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/main_content_manager.js')}}"></script>
 <script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/sidebar_manager.js')}}"></script>
+<script type="text/javascript"
         src="{{url_for('static', filename='javascripts/nav_buttons.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/d3.min.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/gallery.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/data_visualization_step.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/tray_detection_step.js')}}"></script>
+
 {% endblock %}
 
 {% block navbar %}

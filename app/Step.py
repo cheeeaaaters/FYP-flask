@@ -40,6 +40,15 @@ class Step():
     #will be substituted to the main content
     def render(self):
         return 'Work In Progress.'
+
+    def render_sidebar(self):
+        return 'Work In Progress.'
+
+    def requested(self):
+        pass
+
+    def requested_sidebar(self):
+        pass
     
     #Examples for how to use bind_socketio
     #binds the decorated function to THE global object of this step

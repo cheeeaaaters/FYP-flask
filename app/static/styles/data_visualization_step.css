@@ -12,3 +12,25 @@
 .panel text {
     font-size: 15px;    
 }
+
+.process_percentage {
+    height: 200px;
+    width: 200px;
+    margin: 20px auto;
+}
+  
+.progress-bar {
+    fill: #ddd;
+}
+  
+.progress-bar-bg {
+    fill: #726c6c;
+}
+  
+.progress-label {
+    fill: #aaa;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 30px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}

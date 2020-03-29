@@ -1,5 +1,5 @@
 from app.Step import Step
-from flask import render_template
+from flask import render_template, url_for
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from fake.fake_tray_detection import FakeTrayDetection
@@ -10,9 +10,21 @@ import sys
 import os
 import glob
 
+'''
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
 import object_tracker_4 as Yolo
+'''
+
+'''
+    output = {
+        'path': None,
+        'obj_id': 0,
+        'count': count,
+        'percentage': 0,
+        'infer_time': 0,
+    }
+'''
 
 class TrayDetectionStep(Step):
 
@@ -40,7 +52,8 @@ class TrayDetectionStep(Step):
             #TODO: pass the input to yolov3
             #preresquisite: usage of yield
             #outputStream is a generator        
-            outputStream = Yolo.process([video])    
+            #outputStream = Yolo.process([video])
+            outputStream = []    
             (area, date_start, date_end) = self.convert_video(video)        
             delta = date_end - date_start
 
@@ -84,7 +97,9 @@ class TrayDetectionStep(Step):
     #If you wish to add something to start...
     def start(self): 
         #Add something before calling super().start()
-        super().start()      
+        #super().start()
+        print("???????????????????/")              
+        emit('display', url_for('static', filename='images/food.jpg'), namespace='/tray_detection_step')
 
     #If you wish to add something to stop...
     def stop(self):
@@ -92,7 +107,18 @@ class TrayDetectionStep(Step):
         super().stop()       
         
     def render(self):
-        return render_template('test_step.html', list=range(10))
+        return render_template('tray_detection_step.html', list=range(10))
+
+    def render_sidebar(self):
+        return render_template('tray_detection_step_sb.html')
+
+    def requested(self):
+        #print("success")
+        #emit('init_sb', namespace='/tray_detection_step')
+        pass
+
+    def requested_sidebar(self):        
+        emit('init_sb', namespace='/tray_detection_step')
 
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, tray):        
