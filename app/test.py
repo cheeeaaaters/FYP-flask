@@ -9,7 +9,7 @@ def index():
 
 @app.route('/test')
 def testing():
-    return 'hello from asdasd another file'
+    return render_template('data_visualization_step.html')
 
 @socketio.on('my event')
 def handle_my_custom_event(json):
