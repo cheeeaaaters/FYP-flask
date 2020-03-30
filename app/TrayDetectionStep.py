@@ -31,7 +31,7 @@ class TrayDetectionStep(Step):
     def __init__(self):
         super().__init__()
         self.context["step_id"] = 0
-        self.context["step_name"] = "tray_detection_step"
+        self.context["step_name"] = "tray_detection_step"        
         self.coroutine = self.step_process()
         print("Tray Detection Step Created!")
         '''
@@ -97,9 +97,14 @@ class TrayDetectionStep(Step):
     #If you wish to add something to start...
     def start(self): 
         #Add something before calling super().start()
-        #super().start()
-        print("???????????????????/")              
-        emit('display', url_for('static', filename='images/food.jpg'), namespace='/tray_detection_step')
+        #super().start()       
+        obj = {
+            'name': "food.jpg",
+            'path': url_for('static', filename='images/food.jpg'),
+            'percentage': 0.1,
+            'infer_time': 0.1
+        }              
+        emit('display', obj, namespace='/tray_detection_step')
 
     #If you wish to add something to stop...
     def stop(self):
@@ -107,15 +112,13 @@ class TrayDetectionStep(Step):
         super().stop()       
         
     def render(self):
-        return render_template('tray_detection_step.html', list=range(10))
+        return render_template('tray_detection_step.html', **self.context)
 
     def render_sidebar(self):
         return render_template('tray_detection_step_sb.html')
 
-    def requested(self):
-        #print("success")
-        #emit('init_sb', namespace='/tray_detection_step')
-        pass
+    def requested(self):        
+        emit('init_mc', namespace='/tray_detection_step')        
 
     def requested_sidebar(self):        
         emit('init_sb', namespace='/tray_detection_step')
@@ -123,8 +126,10 @@ class TrayDetectionStep(Step):
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, tray):        
         return {
+            'name': os.path.basename(tray["path"]),
             'path': tray["path"],
-            'percentage': tray["percentage"]
+            'percentage': tray["percentage"],
+            'infer_time': tray["infer_time"]
         }
 
     def convert_video(self, video):        
@@ -160,8 +165,6 @@ class TrayDetectionStep(Step):
         
         return (area, date_start, date_end)
 
-    #bind_socketio is used to deal with messages sent from js
-    #Example use case: configuration buttons specifc to the step
     @bind_socketio('/tray_detection_step')
-    def test(self, input):
+    def switch_tab(self, tab):
         pass

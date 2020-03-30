@@ -105,7 +105,7 @@ function stackBarChart(series, id, margin, width, color) {
 
 function scatterPlot(data, id, width, height) {
 
-    data.forEach(d => {d.percent = 100*d.after/(d.before+0.00001)})
+    data.forEach(d => { d.percent = 100 * d.after / (d.before + 0.00001) })
 
     var svg = d3.select("#" + id)
         .attr("width", width * 2)
@@ -137,7 +137,7 @@ function scatterPlot(data, id, width, height) {
 
 
     // Highlight the specie that is hovered
-    var highlight = function (d) {        
+    var highlight = function (d) {
         selected = d.name
 
         d3.selectAll(".dot")
@@ -152,7 +152,7 @@ function scatterPlot(data, id, width, height) {
             .style("fill", color(selected))
             .attr("r", 7)
 
-        d3.selectAll(".panel_line")            
+        d3.selectAll(".panel_line")
             .style("stroke", "rgb(0,0,0,0.15)")
 
         d3.selectAll('.line_' + selected)
@@ -167,7 +167,7 @@ function scatterPlot(data, id, width, height) {
             .style("fill", "lightgrey")
             .attr("r", 5)
 
-        d3.selectAll(".panel_line")            
+        d3.selectAll(".panel_line")
             .style("stroke", "rgb(0,0,0,0.15)")
     }
 
@@ -187,7 +187,7 @@ function scatterPlot(data, id, width, height) {
 
     var panel = svg.append("g")
         .attr("transform", "translate(" + (margin + width) + "," + margin + ")")
-        .attr("class", "panel")        
+        .attr("class", "panel")
 
     var labels = panel.selectAll("g")
         .data(d3.map(data, d => d.name).keys())
@@ -219,26 +219,26 @@ function scatterPlot(data, id, width, height) {
 
     var highlight_percent = function (val) {
         svg.selectAll('circle')
-        .filter(d => d.percent <= val)
-        .style("fill", d => color(d.name))
-        .attr("r", 7)
+            .filter(d => d.percent <= val)
+            .style("fill", d => color(d.name))
+            .attr("r", 7)
 
         svg.selectAll('circle')
-        .filter(d => d.percent > val)
-        .style("fill", "lightgrey")
-        .attr("r", 5)
+            .filter(d => d.percent > val)
+            .style("fill", "lightgrey")
+            .attr("r", 5)
     }
 
     var sliderVertical = d3
         .sliderLeft()
         .min(0)
         .max(100)
-        .height(300)        
+        .height(300)
         .ticks(5)
         .default(1)
         .fill('#87a9ff')
         .on('onchange', highlight_percent)
-        
+
 
     var gVertical = panel
         .append('svg')
@@ -291,75 +291,158 @@ function radialProgress(selector) {
     const parent = d3.select(selector)
     const size = parent.node().getBoundingClientRect()
     const svg = parent.append('svg')
-      .attr('width', size.width)
-      .attr('height', size.height);
+        .attr('width', size.width)
+        .attr('height', size.height);
     const outerRadius = Math.min(size.width, size.height) * 0.45;
     const thickness = 10;
     let value = 0;
-    
+
     const mainArc = d3.arc()
-      .startAngle(0)
-      .endAngle(Math.PI * 2)
-      .innerRadius(outerRadius-thickness)
-      .outerRadius(outerRadius)
-  
+        .startAngle(0)
+        .endAngle(Math.PI * 2)
+        .innerRadius(outerRadius - thickness)
+        .outerRadius(outerRadius)
+
     svg.append("path")
-      .attr('class', 'progress-bar-bg')
-      .attr('transform', `translate(${size.width/2},${size.height/2})`)
-      .attr('d', mainArc())
-    
+        .attr('class', 'progress-bar-bg')
+        .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+        .attr('d', mainArc())
+
     const mainArcPath = svg.append("path")
-      .attr('class', 'progress-bar')
-      .attr('transform', `translate(${size.width/2},${size.height/2})`)
-    
+        .attr('class', 'progress-bar')
+        .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+
     svg.append("circle")
-      .attr('class', 'progress-bar')
-      .attr('transform', `translate(${size.width/2},${size.height/2-outerRadius+thickness/2})`)
-      .attr('width', thickness)
-      .attr('height', thickness)
-      .attr('r', thickness/2)
-  
+        .attr('class', 'progress-bar')
+        .attr('transform', `translate(${size.width / 2},${size.height / 2 - outerRadius + thickness / 2})`)
+        .attr('width', thickness)
+        .attr('height', thickness)
+        .attr('r', thickness / 2)
+
     const end = svg.append("circle")
-      .attr('class', 'progress-bar')
-      .attr('transform', `translate(${size.width/2},${size.height/2-outerRadius+thickness/2})`)
-      .attr('width', thickness)
-      .attr('height', thickness)
-      .attr('r', thickness/2)
-    
+        .attr('class', 'progress-bar')
+        .attr('transform', `translate(${size.width / 2},${size.height / 2 - outerRadius + thickness / 2})`)
+        .attr('width', thickness)
+        .attr('height', thickness)
+        .attr('r', thickness / 2)
+
     let percentLabel = svg.append("text")
-      .attr('class', 'progress-label')
-      .attr('transform', `translate(${size.width/2},${size.height/2})`)
-      .text('0')
-  
+        .attr('class', 'progress-label')
+        .attr('transform', `translate(${size.width / 2},${size.height / 2})`)
+        .text('0')
+
     return {
-      update: function(progressPercent) {
-        const startValue = value
-        const startAngle = Math.PI * startValue / 50
-        const angleDiff = Math.PI * progressPercent / 50 - startAngle;
-        const startAngleDeg = startAngle / Math.PI * 180
-        const angleDiffDeg = angleDiff / Math.PI * 180
-        const transitionDuration = 1500
-  
-        mainArcPath.transition().duration(transitionDuration).attrTween('d', function(){
-          return function(t) {
-            mainArc.endAngle(startAngle + angleDiff * t)
-            return mainArc();
-          }
-        })
-        end.transition().duration(transitionDuration).attrTween('transform', function(){
-          return function(t) {
-            return `translate(${size.width/2},${size.height/2})`+
-              `rotate(${(startAngleDeg + angleDiffDeg * t)})`+
-              `translate(0,-${outerRadius-thickness/2})`
-          }
-        })
-        percentLabel.transition().duration(transitionDuration).tween('bla', function() {
-          return function(t) {
-            percentLabel.text(Math.round(startValue + (progressPercent - startValue) * t));
-          }
-        })
-        value = progressPercent
-      }
+        update: function (progressPercent) {
+            const startValue = value
+            const startAngle = Math.PI * startValue / 50
+            const angleDiff = Math.PI * progressPercent / 50 - startAngle;
+            const startAngleDeg = startAngle / Math.PI * 180
+            const angleDiffDeg = angleDiff / Math.PI * 180
+            const transitionDuration = 1500
+
+            mainArcPath.transition().duration(transitionDuration).attrTween('d', function () {
+                return function (t) {
+                    mainArc.endAngle(startAngle + angleDiff * t)
+                    return mainArc();
+                }
+            })
+            end.transition().duration(transitionDuration).attrTween('transform', function () {
+                return function (t) {
+                    return `translate(${size.width / 2},${size.height / 2})` +
+                        `rotate(${(startAngleDeg + angleDiffDeg * t)})` +
+                        `translate(0,-${outerRadius - thickness / 2})`
+                }
+            })
+            percentLabel.transition().duration(transitionDuration).tween('bla', function () {
+                return function (t) {
+                    percentLabel.text(Math.round(startValue + (progressPercent - startValue) * t));
+                }
+            })
+            value = progressPercent
+        }
     }
 
-  }
+}
+
+function lineChart(selector, data) {
+
+    var margin = { top: 10, right: 30, bottom: 30, left: 60 }
+    var ymax = 1
+    if (data.length > 0) {
+        ymax = Math.max(d3.max(data, d => d.y), ymax)
+    }
+
+    const parent = d3.select(selector)
+    const size = parent.node().getBoundingClientRect()
+    //console.log(size)
+    const svg = parent.append('svg')
+        .attr('width', size.width)
+        .attr('height', size.height)
+
+    const svgg = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var width = size.width - margin.left - margin.right,
+        height = size.height - margin.top - margin.bottom;
+    // append the svg object to the body of the page
+
+    // Add X axis --> it is a date format
+    var x = d3.scaleLinear()
+        .domain([0, 200])
+        .range([0, width]);
+    var x2 = x.copy();
+    var axis = d3.axisBottom(x).ticks(width / 50)
+    var axisG = svgg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(axis);
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain([0, ymax])
+        .range([height, 0]);
+    svgg.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(y));
+    // Add the line
+    var line = d3.line()
+        .x(function (d) { return x(d.x) })
+        .y(function (d) { return y(d.y) })
+
+    svgg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "#69b3a2")
+        .attr("stroke-width", 1.5)
+        .attr("d", line)
+        .attr("class", "infer_time_line")
+
+    var zoom = d3.zoom()
+        .scaleExtent([1, 1])
+        .on('zoom', function () {
+            x = d3.event.transform.rescaleX(x2)
+            axis.scale(x);
+            axisG.call(axis);
+            svg.select('.infer_time_line')
+                .attr('d', line)
+        });
+
+    svg.call(zoom);
+
+    return {
+        add: function (pt) {
+            data.push(pt)
+            if (pt.y > ymax) {
+                ymax = pt.y
+                y = d3.scaleLinear()
+                    .domain([0, ymax])
+                    .range([height, 0]);                
+                svgg.select(".y-axis").remove()
+                svgg.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(y));
+            }
+            svg.select('.infer_time_line')
+                .attr('d', line)
+        }
+    }
+
+}
