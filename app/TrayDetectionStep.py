@@ -23,6 +23,10 @@ import object_tracker_4 as Yolo
         'count': count,
         'percentage': 0,
         'infer_time': 0,
+        'name': ...,
+        'video_path': ...,
+        'area': ...,
+        'date_time': ...,
     }
 '''
 
@@ -62,8 +66,14 @@ class TrayDetectionStep(Step):
             for tray in outputStream:
 
                 if tray["path"] != None:
+
+                    tray['name'] = os.path.basename(tray["path"])
+                    tray['video_path'] = video.path
+                    tray['area'] = area
+                    tray['date_time'] = (date_start+delta*tray["percentage"]).strftime("%d-%b-%Y (%H:%M:%S.%f)")
+
                     #TODO: update the html, call js 
-                    emit('display', self.convert_to_json(tray), namespace='/tray_detection_step')
+                    emit('display', tray, namespace='/tray_detection_step')
                     #Optional: attach a callback when client receives my signal
                     #emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
                     #Example use case: when client internet dies, we may want to stop the process.
@@ -102,7 +112,11 @@ class TrayDetectionStep(Step):
             'name': "food.jpg",
             'path': url_for('static', filename='images/food.jpg'),
             'percentage': 0.1,
-            'infer_time': 0.1
+            'infer_time': 0.1,
+            'video_path': 'test video path',
+            'obj_id': 1,
+            'area': 'bbq',
+            'date_time': datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
         }              
         emit('display', obj, namespace='/tray_detection_step')
 
@@ -129,7 +143,7 @@ class TrayDetectionStep(Step):
             'name': os.path.basename(tray["path"]),
             'path': tray["path"],
             'percentage': tray["percentage"],
-            'infer_time': tray["infer_time"]
+            'infer_time': tray["infer_time"],
         }
 
     def convert_video(self, video):        

@@ -8,6 +8,7 @@ function gallery(selection, tray_detection_data, config) {
     var mv = config.mv || 10
     var max_size = config.max_size || 20
     var description;
+    var onClick;
 
     d3.select(selection)
         .append("div")
@@ -36,6 +37,9 @@ function gallery(selection, tray_detection_data, config) {
         if(description)
             wrappers.call(description)
 
+        if(onClick)
+            wrappers.on('click', onClick)
+
     }
 
     return {
@@ -46,6 +50,9 @@ function gallery(selection, tray_detection_data, config) {
         },
         set_description: function (f) {
             description = f
+        },
+        set_on_click: function (f) {
+            onClick = f
         }
     }
 

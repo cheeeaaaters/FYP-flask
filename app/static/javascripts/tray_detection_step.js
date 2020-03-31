@@ -61,6 +61,27 @@ tray_detection_socket.on('init_mc', function () {
             .text(d => d)
             .style("text-align", "center")
     })
+    tray_gallery.set_on_click(d => {
+        var details = d3.select('#tray_detection_details_content')
+        details.select('.img_wrapper')
+                .style('margin-left', "50px")
+                .selectAll('img')
+                .data([d.path])
+                .join('img')
+                .attr('src', p => p)
+                .attr('width', 500)        
+        details.select('#image_path').text(d.path)
+        details.select('#video_path').text(d.video_path)
+        details.select('#object_id').text(d.obj_id)
+        details.select('#area').text(d.area)
+        details.select('#date_time').text(d.date_time)
+        details.select('#infer_time').text(d.infer_time)
+
+        for (const key in tray_detection_tabs) {
+            tray_detection_tabs[key].hide()
+        }
+        tray_detection_tabs.details.show()
+    })
 
     infer_time_chart = lineChart('#tray_detection_infer_time_graph', [])
     
