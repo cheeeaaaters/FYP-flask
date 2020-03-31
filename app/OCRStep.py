@@ -1,19 +1,22 @@
 from .Step import Step
 from flask_socketio import emit
-from flask import render_template
+from flask import render_template, url_for
 from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray
-import sys, os
+import sys
+import os
 import eventlet
 
+'''
+import count as Polling
+import demo as OCR
+import preprocessing as PreProcessing
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
 path_to_ocr = '/home/ubuntu/CanteenPreProcessing/OCR/main'
 sys.path.insert(1, path_to_ocr)
-import preprocessing as PreProcessing
-import demo as OCR
-import count as Polling
+'''
 
 class OCRStep(Step):
 
@@ -27,13 +30,21 @@ class OCRStep(Step):
     def step_process(self):
         print("Start Process...")
 
-        #get the inputs        
+        # get the inputs
         query = db.session.query(Tray)
-        #TODO: Optional, may let user configure filter or not
+        # TODO: Optional, may let user configure filter or not
         #input_trays = query.all()
-        input_trays = query.filter_by(ocr=None).all()       
-        
-        #TODO: pass the input to OCR        
+        input_trays = query.filter_by(ocr=None).all()
+
+        # TODO: pass the input to OCR
+        # preprocessing.py
+        '''
+        output = {
+            'paths': [],
+            'percentage': 0,
+            'time': 0
+        }
+        '''
         outputStream = PreProcessing.process(input_trays)
         for info in outputStream:
             emit('display', info, namespace='/ocr_step')
@@ -42,16 +53,35 @@ class OCRStep(Step):
 
         self.stop()
         yield
-        
+
+        # demo.py
+        '''
+        output = {
+            'path': None,
+            'percentage': 0,
+            'locate_time': 0,
+            'ocr_time': 0,
+            'ocr_text': [],
+            'err': False
+        }
+        '''
         outputStream = OCR.process()
         for info in outputStream:
             emit('display', info, namespace='/ocr_step')
             eventlet.sleep(0)
             yield
-        
+
         self.stop()
         yield
-        
+
+        # count.py
+        '''
+        output = {
+            'regex': None,
+            'ocr': None,
+            'object_id': None
+        }
+        '''
         outputStream = Polling.process()
         for info in outputStream:
             emit('display', info, namespace='/ocr_step')
@@ -60,25 +90,45 @@ class OCRStep(Step):
             for target in Tray.query.filter(Tray.path.like('%'+pattern+'%')).filter_by(object_id=info['object_id']).all():
                 target.ocr = info['ocr']
             yield
-        
-        #TODO: update the html to indicate the process has finished
+
+        # TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/ocr_step')
 
-    #If you wish to add something to start...
-    def start(self): 
-        #Add something before calling super().start()
-        super().start()      
+    # If you wish to add something to start...
+    def start(self):
+        # Add something before calling super().start()
+        #super().start()
+        obj = {
+            'mode': 3,
+            'percentage': 0.1,
+            'path': url_for('static', filename='images/food.jpg'),
+            'locate_time': 0.1,
+            'ocr_time': 0.1,
+            'ocr_text': ['a','b','c'],
+            'ocr': "0001"
+        }
+        emit('display', obj, namespace='/ocr_step')
 
-    #If you wish to add something to stop...
+
+    # If you wish to add something to stop...
     def stop(self):
-        #Add something before calling super().stop()
-        super().stop()     
+        # Add something before calling super().stop()
+        super().stop()
 
     def render(self):
-        return render_template('test_step.html')
+        return render_template('ocr_step.html')
 
-    #TODO: convert input to json to pass to js
-    def convert_to_json(self, input):        
+    def render_sidebar(self):
+        return render_template('ocr_step_sb.html')
+
+    def requested(self):        
+        emit('init_mc', namespace='/ocr_step')        
+
+    def requested_sidebar(self):        
+        emit('init_sb', namespace='/ocr_step')
+
+    # TODO: convert input to json to pass to js
+    def convert_to_json(self, input):
         return {}
 
     @bind_socketio('/ocr_step')

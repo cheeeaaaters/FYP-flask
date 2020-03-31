@@ -8,6 +8,8 @@
       href="{{url_for('.static', filename='styles/data_visualization_step.css')}}">
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/tray_detection_step.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/ocr_step.css')}}">
 {% endblock %}
 
 {% block scripts %}
@@ -27,7 +29,8 @@
         src="{{url_for('static', filename='javascripts/data_visualization_step.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/tray_detection_step.js')}}"></script>
-
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/ocr_step.js')}}"></script>
 {% endblock %}
 
 {% block navbar %}

@@ -126,7 +126,7 @@ class TrayDetectionStep(Step):
         super().stop()       
         
     def render(self):
-        return render_template('tray_detection_step.html', **self.context)
+        return render_template('tray_detection_step.html')
 
     def render_sidebar(self):
         return render_template('tray_detection_step_sb.html')

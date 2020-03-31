@@ -364,9 +364,9 @@ function radialProgress(selector) {
 
 }
 
-function lineChart(selector, data) {
+function lineChart(selector, data, config) {
 
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 }
+    var margin = { top: 30, right: 30, bottom: 30, left: 60 }
     var ymax = 1
     if (data.length > 0) {
         ymax = Math.max(d3.max(data, d => d.y), ymax)
@@ -374,6 +374,11 @@ function lineChart(selector, data) {
 
     const parent = d3.select(selector)
     const size = parent.node().getBoundingClientRect()
+
+    if(config) {
+        size.width = config.width
+        size.height = config.height
+    }
     //console.log(size)
     const svg = parent.append('svg')
         .attr('width', size.width)
@@ -434,11 +439,11 @@ function lineChart(selector, data) {
                 ymax = pt.y
                 y = d3.scaleLinear()
                     .domain([0, ymax])
-                    .range([height, 0]);                
+                    .range([height, 0]);
                 svgg.select(".y-axis").remove()
                 svgg.append("g")
-                .attr("class", "y-axis")
-                .call(d3.axisLeft(y));
+                    .attr("class", "y-axis")
+                    .call(d3.axisLeft(y));
             }
             svg.select('.infer_time_line')
                 .attr('d', line)

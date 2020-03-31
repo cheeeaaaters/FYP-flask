@@ -2,6 +2,10 @@
     margin-left: 50px;
 }
 
+.hidden{
+    display: none;
+}
+
 .gallery_container{
     width: 100%;
     display: flex;

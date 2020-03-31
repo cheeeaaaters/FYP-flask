@@ -1,0 +1,78 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link" href="#" id="ocr_introduction">Introduction</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" id="ocr_preprocessing">Preprocessing</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" id="ocr_ocr">OCR</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" id="ocr_polling">Polling</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" id="ocr_infer_time">Infer Time</a>
+    </li>
+</ul>
+
+<div id="ocr_introduction_content" class='hidden'>
+    a
+</div>
+
+<div id="ocr_preprocessing_content" class='hidden'>
+    <div>
+        <h2>Angle 0</h2>
+        <div id="gallery_0" class="gallery_container"></div>
+    </div>
+    <div>
+        <h2>Angle 90</h2>
+        <div id="gallery_90" class="gallery_container"></div>
+    </div>
+    <div>
+        <h2>Angle 180</h2>
+        <div id="gallery_180" class="gallery_container"></div>
+    </div>
+    <div>
+        <h2>Angle 270</h2>
+        <div id="gallery_270" class="gallery_container"></div>
+    </div>
+</div>
+
+<div id="ocr_ocr_content" class='hidden'>
+    <div class="img_wrapper">
+    </div>
+    <div class="vertical_wrapper details_container">
+        <div>
+            <b>Image Path: </b>
+            <span id="image_path"></span>
+        </div>
+        <div>
+            <b>Locate Time: </b>
+            <span id="locate_time"></span>
+        </div>
+        <div>
+            <b>OCR Time: </b>
+            <span id="ocr_time"></span>
+        </div>
+        <div>
+            <b>Text Count: </b>
+            <span id="text_count"></span>
+        </div>
+        <ul id="text_found">
+        </ul>
+    </div>
+</div>
+
+<div id="ocr_polling_content" class='hidden gallery_container'>    
+</div>
+
+<div id="ocr_infer_time_content" class='hidden'>
+    <div id="preprocessing_infer_time_graph" class="time_chart">
+    </div>
+    <div id="ocr_locate_time_graph" class="time_chart">
+    </div>
+    <div id="ocr_ocr_time_graph" class="time_chart">
+    </div>
+</div>
+
