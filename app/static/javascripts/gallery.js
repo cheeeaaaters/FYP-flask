@@ -44,7 +44,7 @@ function gallery(selection, tray_detection_data, config) {
 
     return {
         append: function (path) {
-            tray_detection_data.push(path)
+            tray_detection_data.unshift(path)
             data = tray_detection_data.slice(0, max_size)
             update_gallery(data)
         },

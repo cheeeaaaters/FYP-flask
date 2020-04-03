@@ -1,0 +1,20 @@
+#classify_eaten_classifier_content{
+    display: flex; 
+    justify-content: space-around;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+}
+
+#classify_eaten_classifier_content > div{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    border-left: 1px solid rgb(0,0,0,0.2);
+    border-right: 1px solid rgb(0,0,0,0.2);
+}
+
+#classify_eaten_classifier_content > div > h2{
+    text-align: center;
+}

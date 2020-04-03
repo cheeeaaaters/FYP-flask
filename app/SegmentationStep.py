@@ -1,15 +1,17 @@
 from .Step import Step
 from flask_socketio import emit
-from flask import render_template
+from flask import render_template, url_for
 from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray, SegmentationInfo
 import sys, os
 import eventlet
 
+'''
 path_to_seg = "/home/ubuntu/FYP-Seg"
 sys.path.insert(1, path_to_seg)
 import detect as Seg
+'''
 
 class SegmentationStep(Step):
 
@@ -53,18 +55,37 @@ class SegmentationStep(Step):
         #TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/segmentation_step')
 
-    #If you wish to add something to start...
-    def start(self): 
-        #Add something before calling super().start()
-        super().start()      
+    # If you wish to add something to start...
+    def start(self):
+        # Add something before calling super().start()
+        #super().start()
+        obj = {
+            'mode': 3,
+            'percentage': 0.1,
+            'path': url_for('static', filename='images/long.png'),
+            'locate_time': 0.1,
+            'infer_time': 0.1,
+            'ocr_text': ['a','b','c'],
+            'ocr': "0001"
+        }
+        emit('display', obj, namespace='/segmentation_step')
 
-    #If you wish to add something to stop...
+    # If you wish to add something to stop...
     def stop(self):
-        #Add something before calling super().stop()
-        super().stop()     
+        # Add something before calling super().stop()
+        super().stop()
 
     def render(self):
-        return render_template('test_step.html')
+        return render_template('segmentation_step.html')
+
+    def render_sidebar(self):
+        return render_template('segmentation_step_sb.html')
+
+    def requested(self):        
+        emit('init_mc', namespace='/segmentation_step')        
+
+    def requested_sidebar(self):        
+        emit('init_sb', namespace='/segmentation_step')
 
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, input):        

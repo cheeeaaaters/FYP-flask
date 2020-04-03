@@ -1,14 +1,14 @@
 var tray_detection_socket = io('/tray_detection_step');
 
 var tray_detection_progess_bar;
-var infer_time_chart;
+var tray_infer_time_chart;
 var tray_gallery;
 var i = 1;
 
 tray_detection_socket.on('display', function (tray) {  
     tray_detection_progess_bar.update(tray.percentage* 100)  
     tray_gallery.append(tray)
-    infer_time_chart.add({x: i, y: tray.infer_time})
+    tray_infer_time_chart.add({x: i, y: tray.infer_time})
     i += 1;
 });
 
@@ -83,7 +83,7 @@ tray_detection_socket.on('init_mc', function () {
         tray_detection_tabs.details.removeClass('hidden')
     })
 
-    infer_time_chart = lineChart('#tray_detection_infer_time_graph', [], {width: 1000, height: 300})
+    tray_infer_time_chart = lineChart('#tray_detection_infer_time_graph', [], {width: 1000, height: 300})
     
     for (const key in tray_detection_tabs) {
         tray_detection_tabs[key].addClass('hidden')
