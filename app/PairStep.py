@@ -41,7 +41,7 @@ class PairStep(Step):
             diff_time = avg_time(intervals[k2])-avg_time(intervals[k1])
             check2 = check1 and (eat_min <= diff_time <= eat_max)
             check3 = check2 and (area(intervals[k2]) == 'return_area') and (area(intervals[k1]) == 'non_return_area')
-            check4 = check3 and (dish(intervals[k2] == dish(intervals[k1]))
+            check4 = check3 and (dish(intervals[k2]) == dish(intervals[k1]))
             return check4
 
         n = len(intervals)
@@ -130,18 +130,38 @@ class PairStep(Step):
         #TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/pair_step')
 
-    #If you wish to add something to start...
-    def start(self): 
-        #Add something before calling super().start()
-        super().start()      
+    # If you wish to add something to start...
+    def start(self):
+        # Add something before calling super().start()
+        #super().start()
+        obj = {
+            'mode': 3,
+            'percentage': 0.1,
+            'path': url_for('static', filename='images/food.jpg'),
+            'locate_time': 0.1,
+            'ocr_time': 0.1,
+            'ocr_text': ['a','b','c'],
+            'ocr': "0001"
+        }
+        emit('display', obj, namespace='/ocr_step')
 
-    #If you wish to add something to stop...
+
+    # If you wish to add something to stop...
     def stop(self):
-        #Add something before calling super().stop()
-        super().stop()     
+        # Add something before calling super().stop()
+        super().stop()
 
     def render(self):
-        return self.context["step_name"]
+        return render_template('pair_step.html')
+
+    def render_sidebar(self):
+        return render_template('pair_step_sb.html')
+
+    def requested(self):        
+        emit('init_mc', namespace='/pair_step')        
+
+    def requested_sidebar(self):        
+        emit('init_sb', namespace='/pair_step')
 
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, input):        

@@ -6,6 +6,7 @@
     var segmentation_progess_bar;
     var segmentation_infer_time_chart;
     var segmentation_gallery;
+    var two_images;
 
     var i = 1;
     
@@ -47,7 +48,8 @@
             for (const key in segmentation_tabs) {
                 segmentation_tabs[key].addClass('hidden')
             }
-            segmentation_tabs.pixel_info.removeClass('hidden')          
+            segmentation_tabs.pixel_info.removeClass('hidden')  
+            two_images = cross_point("#cross_point_container")        
         })
         
         $("#segmentation_infer_time").on('click', () => {
@@ -64,6 +66,7 @@
             mv: 30
         }
         segmentation_gallery = gallery("#segmentation_gallery", [], gallery_config)
+        
         segmentation_infer_time_chart = lineChart('#segmentation_infer_time_graph', [], {width: 1000, height: 300})
         
         for (const key in segmentation_tabs) {

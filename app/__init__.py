@@ -29,6 +29,7 @@ from app import TrayDetectionStep
 from app import OCRStep
 from app import ClassifyEatenStep
 from app import SegmentationStep
+from app import PairStep
 
 socketio_helper.add_socketio()
 

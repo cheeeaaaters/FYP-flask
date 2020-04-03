@@ -31,3 +31,9 @@
     justify-content: center;
     
 }
+
+#cross_point_container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
