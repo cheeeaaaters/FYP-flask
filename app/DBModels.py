@@ -21,8 +21,6 @@ class Tray(db.Model):
     area = db.Column(db.String(20), nullable=False)
     date_time = db.Column(db.DateTime, index=True)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
-    pair = db.relationship('Pair')
-    pair_id = db.Column(db.Integer, db.ForeignKey('pair.id'))
 
     def __repr__(self):
         return '<tray> %s' % self.path
@@ -30,8 +28,10 @@ class Tray(db.Model):
 class Pair(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ocr = db.Column(db.String(4), index=True, nullable=False)
-    before_tray = db.relationship('Tray', uselist=False)
-    after_tray = db.relationship('Tray', uselist=False)
+    before_tray_id = db.Column(db.Integer, db.ForeignKey('tray.id'), nullable=False)
+    before_tray = db.relationship('Tray', foreign_keys=[before_tray_id], backref='pair_before', uselist=False)
+    after_tray_id = db.Column(db.Integer, db.ForeignKey('tray.id'), nullable=False)
+    after_tray = db.relationship('Tray', foreign_keys=[after_tray_id], backref='pair_after', uselist=False)
 
     def __repr__(self):
         return '<pair> %r' % self.ocr

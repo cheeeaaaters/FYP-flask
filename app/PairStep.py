@@ -18,43 +18,50 @@ class PairStep(Step):
         super().__init__()
         self.context["step_id"] = 3
         self.context["step_name"] = "pair_step"
+        self.state = [True, False, False]
 
     @staticmethod
-    def dp(intervals, labels):
+    def dp(intervals, labels, state):
 
         def dish(interval):
-            counter = Counter(interval)
+            counter = Counter([i.dish for i in interval])            
             return counter.most_common(1)[0]
 
         def area(interval):
             num_return_area = sum(i.area == 'return_area' for i in interval)
-            num_non_return_area = len(interval) - num_return_area
+            num_non_return_area = len(interval) - num_return_area            
             return 'return_area' if num_return_area > num_non_return_area else 'non_return_area'
 
         def avg_time(interval):
-            min_time = min(interval)
-            sum_timedelta = sum((i-min_time) for i in interval)
+            min_time = min([i.date_time for i in interval])            
+            sum_timedelta = sum([(i.date_time-min_time)
+                                for i in interval], timedelta())
             avg_timedelta = sum_timedelta/len(interval)
             return min_time + avg_timedelta
 
         def make_sense(k1, k2):
-            check1 = labels[k2] == 'E' and labels[k1] == 'U'
+            check1 = (not state[0]) or (labels[k2] == 'E' and labels[k1] == 'U')
             diff_time = avg_time(intervals[k2])-avg_time(intervals[k1])
+            #print(check1)
             check2 = check1 and (eat_min <= diff_time <= eat_max)
-            check3 = check2 and (area(intervals[k2]) == 'return_area') and (
-                area(intervals[k1]) == 'non_return_area')
-            check4 = check3 and (dish(intervals[k2]) == dish(intervals[k1]))
+            #print(check2)
+            check3 = check2 and ((not state[1]) or ((area(intervals[k2]) == 'return_area') and (
+                area(intervals[k1]) == 'non_return_area')))
+            #print(check3)
+            check4 = check3 and ((not state[2]) or (
+                dish(intervals[k2]) == dish(intervals[k1])))
+            #print(check4)
             return check4
 
         n = len(intervals)
-        num_pairs = [0] * n
-        pointers = [-1] * n
+        num_pairs = [0] * (n+1)
+        pointers = [-1] * (n+1)
 
-        for i in range(n-2, -1, -1):
-
+        for i in range(n-2, -1, -1):            
             max = num_pairs[i+1]
             index = -1
-            for j in range(i+1, n+1, 1):
+            for j in range(i+1, n, 1):
+                #print(i, j, make_sense(i, j))
                 if make_sense(i, j):
                     if (1+num_pairs[j+1]) > max:
                         max = (1+num_pairs[j+1])
@@ -72,6 +79,7 @@ class PairStep(Step):
                 pairs.append((cur, p))
                 cur = p+1
 
+        print(pairs)
         return pairs
 
     def step_process(self):
@@ -89,20 +97,26 @@ class PairStep(Step):
         query = q.order_by(Tray.ocr, Tray.date_time)
 
         ocr = None
-        intervals = []
+        list_of_trays = []
         for tray in query.all():
-
-            if (tray.ocr != ocr):
+            if tray.ocr != ocr:
                 ocr = tray.ocr
-                intervals.clear()
-            if len(intervals) == 0:
-                intervals.append([tray])
-            last_interval = intervals[-1]
-            last_tray = last_interval[-1]
-            if (tray.date_time-last_tray.date_time) <= one_minute:
-                last_interval.append(tray)
+                list_of_trays.append([tray])
             else:
-                intervals.append([tray])
+                list_of_trays[-1].append(tray)
+
+        for same_ocr in list_of_trays:
+            intervals = []
+            for tray in same_ocr:
+                if len(intervals) == 0:
+                    intervals.append([tray])
+                else:
+                    last_interval = intervals[-1]
+                    last_tray = last_interval[-1]
+                    if (tray.date_time-last_tray.date_time) <= one_minute:
+                        last_interval.append(tray)
+                    else:
+                        intervals.append([tray])
 
             labels = []
             for interval in intervals:
@@ -110,7 +124,10 @@ class PairStep(Step):
                 num_uneaten = len(interval) - num_eaten
                 labels.append('E' if num_eaten > num_uneaten else 'U')
 
-            interval_pairs = dp(intervals, labels)
+            # print(intervals)
+            # print(labels)
+
+            interval_pairs = PairStep.dp(intervals, labels, self.state)
 
             def max_pixel(interval):
                 i, max = (0, 0)
@@ -120,11 +137,15 @@ class PairStep(Step):
                 return i
 
             for (U, E) in interval_pairs:
-                i = max_pixel(U)
-                j = max_pixel(E)
-                pair = Pair(ocr=ocr, before_tray=U[i], after_tray=E[j])
+                i = max_pixel(intervals[U])
+                j = max_pixel(intervals[E])
+                pair = Pair(ocr=ocr, before_tray=intervals[U][i], after_tray=intervals[E][j])
+                print(intervals[U][i].segmentation_info.total, intervals[E][j].segmentation_info.total)
                 db.session.add(pair)
                 db.session.commit()
+                print(pair.before_tray.segmentation_info.total, pair.after_tray.segmentation_info.total)
+                print(pair.before_tray)
+                print(pair.after_tray)
 
         # TODO: update the html to indicate the process has finished
         emit('finish', {}, namespace='/pair_step')
@@ -132,17 +153,7 @@ class PairStep(Step):
     # If you wish to add something to start...
     def start(self):
         # Add something before calling super().start()
-        # super().start()
-        obj = {
-            'mode': 3,
-            'percentage': 0.1,
-            'path': url_for('static', filename='images/food.jpg'),
-            'locate_time': 0.1,
-            'ocr_time': 0.1,
-            'ocr_text': ['a', 'b', 'c'],
-            'ocr': "0001"
-        }
-        emit('display', obj, namespace='/ocr_step')
+        self.step_process()
 
     # If you wish to add something to stop...
 
@@ -167,5 +178,5 @@ class PairStep(Step):
         return {}
 
     @bind_socketio('/pair_step')
-    def test(self, input):
-        pass
+    def change_state(self, state):
+        self.state = state

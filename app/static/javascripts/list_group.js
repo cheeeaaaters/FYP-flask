@@ -27,4 +27,18 @@ function list_group(selection, data, callback){
         .append('span')
         .text(d => d)
 
+    return {
+
+        initState: (s) => {
+            state = s
+            d3.select(selection)
+                .selectAll('.list_group_item')
+                .style('background-color', (d, i) => {
+                    if (s[i]) return '#bbf0ca'
+                    return 'rgb(245, 245, 245)'
+                })
+        }
+
+    }
+
 }
