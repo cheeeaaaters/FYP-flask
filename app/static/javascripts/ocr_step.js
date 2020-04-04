@@ -24,7 +24,7 @@ ocr_socket.on('display', function (tray) {
         ocr_content.select('.img_wrapper')
                     .style('margin-left', "50px")
                     .selectAll('img')
-                    .data([tray.path])
+                    .data(['/my_images/' + tray.path])
                     .join('img')
                     .attr('src', p => p)
                     .attr('width', 500)

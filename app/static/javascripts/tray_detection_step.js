@@ -66,7 +66,7 @@ tray_detection_socket.on('init_mc', function () {
         details.select('.img_wrapper')
                 .style('margin-left', "50px")
                 .selectAll('img')
-                .data([d.path])
+                .data(['/my_images/' + d.path])
                 .join('img')
                 .attr('src', p => p)
                 .attr('width', 500)        

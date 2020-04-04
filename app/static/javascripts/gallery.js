@@ -29,7 +29,7 @@ function gallery(selection, tray_detection_data, config) {
             .style("flex-direction", "column")
 
         wrappers.selectAll("img")
-            .data(d => [d.path])
+            .data(d => ['/my_images/' + d.path])
             .join("img")
             .attr("src", p => p)
             .attr("width", image_width)

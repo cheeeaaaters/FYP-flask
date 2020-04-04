@@ -1,15 +1,17 @@
-from flask import render_template
+from flask import render_template, send_file
 from app import app, socketio
 
 @app.route('/')
 def index():
     return render_template('base.html')
-    #print(type(a))
-    #return "<h1>HELLO</h1>"
 
 @app.route('/test')
 def testing():
     return render_template('data_visualization_step.html')
+
+@app.route('/my_images/<path:filename>')
+def get_images(filename):
+    return send_file(filename)
 
 @socketio.on('my event')
 def handle_my_custom_event(json):
