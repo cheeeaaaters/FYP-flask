@@ -1,0 +1,10 @@
+.list_group_item{
+    border: 2px solid lightgrey;
+    border-radius: 10px;
+    background: rgb(245, 245, 245);
+    margin: 40px 20px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

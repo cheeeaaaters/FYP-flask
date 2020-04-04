@@ -51,3 +51,15 @@
     padding-right: 40px;
     width: fit-content;
 }
+
+.greybox{
+    background-color: rgb(245, 245, 245);
+    text-align: center;
+    padding: 20px 0px;
+    margin: 20px;
+    font-size: 16px;
+}
+
+.space{
+    margin-top: 40px;
+}
