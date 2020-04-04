@@ -40,13 +40,12 @@ Window:
 >5. import app
 >6. from app.DBModels import *
 >7. from app import db
->8. db.metadata.clear()
->9. go to the file system, and delete app.db inside the app folder
->10. db.create_all()
->11. db.session.close()
->12. Video.query.all(), to check if there is exception
->13. exit()
->14. uncomment and run
+>8. go to the file system, and delete app.db inside the app folder
+>9. db.create_all()
+>10. db.session.close()
+>11. Video.query.all(), to check if there is exception
+>12. exit()
+>13. uncomment and run
 
 ## 3. I changed the html/js/css. It not updating. What to do???
 >Press cltr+shift+R on chrome
