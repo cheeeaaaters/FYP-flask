@@ -1,4 +1,5 @@
 from .Step import Step
+from flask import render_template, url_for
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from app import db
@@ -48,15 +49,44 @@ class ClassifyDishStep(Step):
     #If you wish to add something to start...
     def start(self): 
         #Add something before calling super().start()
-        super().start()      
+        #super().start()       
+        obj = {
+            'name': "food.jpg",
+            'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
+            'percentage': 0.1,
+            'infer_time': 0.1,
+            'dish': 'bbq'
+        }                      
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'two_choices'
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'delicacies'
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'japanese'
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'teppanyaki'
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'veggies'
+        emit('display', obj, namespace='/classify_dish_step')
+        obj['dish'] = 'other'
+        emit('display', obj, namespace='/classify_dish_step')
 
     #If you wish to add something to stop...
     def stop(self):
         #Add something before calling super().stop()
-        super().stop()     
-
+        super().stop()       
+        
     def render(self):
-        return 'Work In Progress.'
+        return render_template('classify_dish_step.html')
+
+    def render_sidebar(self):        
+        return render_template('classify_dish_step_sb.html')
+
+    def requested(self):        
+        emit('init_mc', namespace='/classify_dish_step')        
+
+    def requested_sidebar(self):    
+        emit('init_sb', namespace='/classify_dish_step')
 
     #TODO: convert tray to json to pass to js
     def convert_to_json(self, input):        

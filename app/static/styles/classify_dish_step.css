@@ -1,0 +1,9 @@
+.dish_tag{
+    border: 2px solid lightgrey;
+    border-radius: 10px;    
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    margin-top: 10px;
+}

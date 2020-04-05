@@ -28,6 +28,7 @@ from app import Step
 from app import TrayDetectionStep
 from app import OCRStep
 from app import ClassifyEatenStep
+from app import ClassifyDishStep
 from app import SegmentationStep
 from app import PairStep
 
