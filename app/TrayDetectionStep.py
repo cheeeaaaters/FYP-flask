@@ -111,7 +111,7 @@ class TrayDetectionStep(Step):
         obj = {
             'name': "food.jpg",
             #'path': url_for('static', filename='images/food.jpg'),
-            'path': '/my_images/C:/Users/cheee/Desktop/UST/fyp/food.jpg',
+            'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
             'percentage': 0.1,
             'infer_time': 0.1,
             'video_path': 'test video path',

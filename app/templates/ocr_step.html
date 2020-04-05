@@ -16,8 +16,91 @@
     </li>
 </ul>
 
-<div id="ocr_introduction_content" class='hidden'>
-    a
+<div id="ocr_introduction_content" class='hidden intro_container'>
+    <p class="title">OCR Step</p>
+
+    <h2 class="space"> Main Objective </h2>
+    <p class='greybox'>
+        From the collection of tray images, we need to filter out the trays with IDs
+        and identify what the ID is.    
+    </p>
+
+    <h2 class="space"> Preprocessing </h2>
+    <p class='long_text'>
+        We need to preprocess the images so that they could be rotated to a suitable angle such that
+        the OCR can detect the digits. Here is an image depicting how preprocessing is done.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/preprocessing.png'/>
+    </div>
+    <li class="f16"><b>Canny Edge Detector</b> - Tells whether a pixel is on an edge.</li>
+    <li class="f16"><b>Hough Transform</b> - Find the longest line segment.</li>
+    <li class="f16"><b>Rotations</b> - Rotate the greyscale images accordingly .</li>
+    <p class="long_text">    
+        For each image, we first apply canny edge detector to locate where is the edge. However, 
+        we only know about the "edges" at pixel level. We need to futher apply hough transform to 
+        find the line segments, which can be represented by a start point and an end point.
+        Then, we can calculate the slope / angle of the longest line segment. It is assumed that the 
+        angle is how the tray is rotated. 
+        There are four possible orientations: 0, 90, 180, 270 degrees. We need to rotate the images
+        to each degree and feed into the OCR.
+    </p>
+
+    <h2 class="space"> OCR </h2>
+    <p class='greybox'>
+        From the collections of preprocessed images, we first locate the ID text, and then
+        recognize the digits.
+    </p>
+
+    <h2 class="space"> Step 1 - CTPN </h2>
+    <div class="vertical_wrapper center_wrapper">
+        <img src='static/images/CTPN.png'/>
+        <figcaption><a href="https://arxiv.org/abs/1609.03605">
+            source: https://arxiv.org/abs/1609.03605
+        </a></figcaption>
+    </div>
+    <p class='long_text'>
+        CTPN (Connectionist Text Proposal Network) is a network combining techniques from CNN and RNN 
+        for reliable and accurate text localization. First, it makes use of the VGG-16 network for
+        feature extraction. But since text is sequential, sequential context information is crucial to
+        make a reliable text region proposal. With a sliding window approach, the features the windows 
+        extract are fed into an RNN. The RNN is also installed with a bi-direcitonal LSTM, which allows it 
+        to encode the recurrent context in both directions, so that the connectionist receipt field is able
+        to cover the whole image width.
+    </p>
+    <p class='long_text'>
+        The model only predicts y-coordinates for the text anchors. The x-coordinates are directly
+        mapped from the sliding windows. That's why rotations are important.
+    </p>
+    <p class='greybox'>
+        Now we have a list of bounding boxes that contain texts. This is important
+        because we are only interested in the bounding box that contains the 4 digits
+        ,which are the tray's ID.
+    </p>
+
+    <h2 class="space"> Step 2 - Pytesseract </h2>
+    <p class='long_text'>
+        Pytesseract is an optical character recognition (OCR) tool for Python.
+        We are looking for the bounding box that has text, which is <b>exactly</b>
+        all digits and of length 4.        
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pytesseract.png'/>
+    </div>
+    <p class='greybox'>
+        Recognition of characters and checking are done in this step.
+    </p>
+
+    <h2 class="space"> Polling </h2>
+    <p class='long_text'>
+        Remember when we talked about object_id in tray detection step?
+        The video may capture a lot of images of the same tray in consecutive frames.
+        The images will go through OCR. 
+        And the results will be saved to a txt file dedicted to the trays with the same object_id.
+        So, we need polling to find the most common text.
+        The most common text will be the ID for all the trays with the same object_id.
+    </p>
+
 </div>
 
 <div id="ocr_preprocessing_content" class='hidden'>
