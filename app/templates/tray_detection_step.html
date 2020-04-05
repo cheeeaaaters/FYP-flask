@@ -13,8 +13,144 @@
     </li>
 </ul>
 
-<div id="tray_detection_introduction_content" class="hidden">
-    a
+<div id="tray_detection_introduction_content" class="hidden intro_container">
+    <p class="title">Tray Detection Step</p>
+
+    <h2 class="space"> Main Objective </h2>
+    <p class='greybox'>
+        From the collection of input videos, we need to crop out the trays that is non-empty.    
+    </p>
+
+    <h2 class="space"> Yolov3 </h2>
+    <p class="long_text">
+        Traditional systems repurpose classifiers or localizers to perform detection. 
+        They apply the model to an image at multiple locations and scales. High scoring regions of the image are considered detections.
+        Yolo uses a totally different approach. They apply a single neural network to the full image. 
+        This network divides the image into regions and predicts bounding boxes and probabilities for each region. 
+        These bounding boxes are weighted by the predicted probabilities.  
+    </p>
+    <div class="vertical_wrapper center_wrapper">
+        <img src='static/images/darknet_yolov3.png' width=800 style="margin-left: 100px; margin-top: 30px;"/>
+        <figcaption><a href="https://github.com/AlexeyAB/darknet">
+            source: https://github.com/AlexeyAB/darknet
+        </a></figcaption>
+    </div>
+    <p class='greybox'>
+        We adopted the Yolov3 from AlexeyAB.    
+    </p>
+    <p class="long_text">
+        PG students had successfully  made a preprocessing pipeline to crop out the bounding boxes 
+        of the trays from the videos with a Pytorch implementation of YOLOv3. 
+        There were three possible measures to improve the performance of YOLOv3, adopting another 
+        implementation of YOLOv3, utilization of half precision (FP16) and model compression. 
+        We tried another implementation of YOLOv3 based on Darknet [AlexeyAB darknet] 
+        which was written in C language and supported half-precision inference.
+    </p>
+
+    <h2 class="space"> SlimYolov3 </h2>
+    <p class='greybox'>
+        We optimized / compressed Yolov3 for enhanced performance.
+    </p>
+    <div class="vertical_wrapper center_wrapper">
+        <img src='static/images/slimyolo.jpg' width=800 style="margin: 30px 0px;"/>   
+        <figcaption><a href="https://arxiv.org/abs/1907.11093">
+            source: https://arxiv.org/abs/1907.11093
+        </a></figcaption>     
+    </div>
+    <p class="long_text">
+        To compress the YOLOv3 model, we tried the algorithm mentioned in SlimYOLOv3 
+        [https://arxiv.org/abs/1907.11093]. 
+        We only pruned one time and reduced the number of parameters by half. 
+        Eventually, we wrapped the new version of YOLOv3 into Python to adapt to the 
+        original preprocessing pipeline.
+    </p>
+
+    <h2 class="space"> Evaluation </h2>
+    <p class='greybox'>
+        We compared the inference speed between the PG students’ implementation 
+        and our improved implementation and tested whether the improved model suffered from a drop in precision.
+    </p>
+    <div class="center_wrapper">
+        <u class="table_title">3-minutes video from BBQ</u>
+    </div>
+    <table style="width:100%" class="tray_detection_table">
+        <tr>
+          <th></th>
+          <th>PG students’ version</th> 
+          <th>Darknet Unpruned</th>
+          <th>Darknet Unpruned Half Precision</th>
+          <th>Darknet Pruned </th>
+          <th>Darknet Pruned Half Precision</th>
+        </tr>
+        <tr>
+          <td>Average inference time per image</td>
+          <td>0.080s</td>
+          <td>0.0239s</td>
+          <td>0.0210s</td>
+          <td>0.0200s</td>
+          <td>0.0199s</td>
+        </tr>
+        <tr>
+          <td>FPS</td>
+          <td>6.96</td>
+          <td>19.6</td>
+          <td>20.8</td>
+          <td>22.1</td>
+          <td>22.3</td>          
+        </tr>
+        <tr>
+          <td>Number of detected trays with food (Ground Truth: 10)</td>
+          <td>10</td>
+          <td>10</td>
+          <td>10</td>
+          <td>8</td>
+          <td>8</td>
+        </tr>
+      </table>
+
+    <div class="center_wrapper">
+        <u class="table_title">3-minutes video from return area</u>
+    </div>
+    <table style="width:100%" class="tray_detection_table">
+        <tr>
+          <th></th>
+          <th>PG students’ version</th> 
+          <th>Darknet Unpruned</th>
+          <th>Darknet Unpruned Half Precision</th>
+          <th>Darknet Pruned </th>
+          <th>Darknet Pruned Half Precision</th>
+        </tr>
+        <tr>
+          <td>Average inference time per image</td>
+          <td>0.0786s</td>
+          <td>0.0236s</td>
+          <td>0.0196s</td>
+          <td>0.0188</td>
+          <td>0.0185s</td>
+        </tr>
+        <tr>
+          <td>FPS</td>
+          <td>7.25</td>
+          <td>20.3</td>
+          <td>22.4</td>
+          <td>23.2</td>
+          <td>23.6</td>          
+        </tr>
+        <tr>
+          <td>Number of detected trays with food (Ground Truth: 20)</td>
+          <td>20</td>
+          <td>19</td>
+          <td>19</td>
+          <td>19</td>
+          <td>19</td>
+        </tr>
+      </table>
+
+    <p class='greybox'>
+        the best choice would be the Darknet version of YOLOv3 with an unpruned model and 
+        half precision since it strikes a good balance between speed and accuracy.
+    </p>
+
 </div>
 
 <div class="gallery_container hidden" id="tray_detection_gallery_content">

@@ -1,0 +1,44 @@
+.intro_container{
+    margin: 30px
+}
+
+.title{
+    font-size: 60px;
+    border-bottom: 2px solid #6d8fb3;
+    border-left: 20px solid #6d8fb3;    
+    padding-left: 20px;
+    padding-right: 40px;
+    width: fit-content;
+}
+
+.long_text{
+    margin: 20px;
+    font-size: 16px;
+}
+
+.greybox{
+    background-color: rgb(245, 245, 245);
+    text-align: center;
+    padding: 20px 30px;
+    margin: 20px;
+    font-size: 16px;
+}
+
+.lightbluebox{
+    background-color: rgb(175, 230, 255);
+    text-align: center;
+    padding: 20px 30px;
+    margin: 20px;
+    font-size: 16px;
+}
+
+.space{
+    margin-top: 40px;
+}
+
+.center_wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
