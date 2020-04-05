@@ -9,6 +9,137 @@
 
     <h2 class="space"> Algorithm </h2>
 
+    <li class="pair_step">Step 1 - Find all the trays with the same ID</li>
+    <p class='greybox'>
+        Initially, all the trays are in the database.Hhere is an illustration
+        about how the trays are distributed with respect to time. Different colors correspond to Different
+        IDs.   
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_1.png'/>
+    </div>
+
+    <li class="pair_step">Step 2 - Split the trays into groups of different IDs</li>
+    <p class='greybox'>
+        We need to split the trays by ID, because only the trays with the same IDs can be paired.
+        We will repeat the algorithm for all groups. Now, just consider a group where all trays have
+        the same ID.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_2.png'/>
+    </div>
+
+    <li class="pair_step">Step 3 - Sort the trays with respect to time</li>
+    <p class='greybox'>
+        Sorting makes things easier. Now, as you can see, the line is a timeline.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_3.png'/>
+    </div>
+
+    <li class="pair_step">Step 4 - Group the trays into intervals of trays</li>
+    <p class='greybox'>
+        Yolov3 can capture a lot of images of the same tray in different frames. However, 
+        the frames are usually close to each other. We have already recorded the time when
+        the image is captured. Then, close enough images (time difference <= <b>1 min</b>) 
+        are grouped together, which we call intervals.
+    </p>
+    <p class='greybox'>
+        Why don't we remove repeated images once grouped? It will be explained later.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_4.png'/>
+    </div>
+    <p class='lightbluebox'>
+        You can configure the time difference at the sidebar.
+    </p>
+
+    <li class="pair_step">Step 5 - Label the intervals to be Uneaten or Eaten</li>
+    <p class='greybox'>
+        The Uneaten VS Eaten Classifier should have been run to classify each tray. 
+        But, error may happen sometimes. To be deduce whether the interval is (Uneaten), which we
+        abbreviate as (U), or (Eaten), which we abbreviate as (E), we simply choose the one
+        that has the highest count in the interval.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_5.png'/>
+    </div>
+
+    <li class="pair_step">Step 6 - Find an optimal pairing</li>
+    <p class='greybox'>
+        We need to find a method to pair up the intervals so that it results in
+        a maximal number of pairs that satisfy certain constraints, which you can configure.
+    </p>
+
+    <li class="pair_step">Constraint 1 - No crossing of pairs</li>
+    <p class='greybox'>
+        The following picture will help you understand what this means.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_6_1.png'/>
+    </div>
+
+    <li class="pair_step">Constraint 2 - Time between intervals</li>
+    <p class='greybox'>
+        We assume the eating duration is usually <b>10 - 60 minutes</b>.
+        If this is not assumed, there may be pairs that is not reasonable.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_6_2.png'/>
+    </div>
+
+    <li class="pair_step">Constraint 3 - (Uneaten -> Eaten) constraint - Optional</li>
+    <p class='greybox'>
+        It just makes sure that all the pairs are of the form (U,E), which is a sensible
+        thing to do because food can only be eaten when they are uneaten. (-.-)
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_6_3.png'/>
+    </div>
+    <p class='lightbluebox'>
+        You can disable/enable this at the sidebar, in case you think the classifier is bad/good.
+    </p>
+
+    <li class="pair_step">Constraint 4 - Area constraint - Optional</li>
+    <p class='greybox'>
+        For each pair of intervals, it makes sure most of the trays from the head interval
+        is captured at non-return areas, while that of the tail interval is captured at 
+        the return area. It is similar to constraint 3, but you need to bear in mind that someone may
+        carry an eaten tray and walk across a non-return area, and someone may carry an uneaten tray
+        and walk across the return area.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_6_4.png'/>
+    </div>
+    <p class='lightbluebox'>
+        You can disable/enable this at the sidebar.
+    </p>
+
+    <li class="pair_step">Constraint 5 - Dish Type constraint - Optional</li>
+    <p class='greybox'>
+        To further ensure the pair is really correct, we may constraint the two trays to
+        have the same dish type. To do so, we are doing polling again at each interval and label the
+        interval with a dish type. However, this may severly limit the final yield of pairs since
+        the accuracy of the dish type classifier is low.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_6_5.png'/>
+    </div>
+    <p class='lightbluebox'>
+        You can disable/enable this at the sidebar, in case you think the classifier is bad/good.
+    </p>
+
+    <li class="pair_step">Step 7 - Pick the one with the largest pixel count</li>
+    <p class='greybox'>
+        Now, we have a list of intervals. Remember when we talk about repeated images?
+        Now, it is the time to collapse the intervals into images. 
+        For each interval, there will be a list of images.
+        We will select the one with the largest food pixel count.
+        In a certain degree, it reflects how good the image was captured.
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/pair_7.png'/>
+    </div>
 
 </div>
 

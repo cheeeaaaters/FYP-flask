@@ -55,11 +55,25 @@
 .greybox{
     background-color: rgb(245, 245, 245);
     text-align: center;
-    padding: 20px 0px;
+    padding: 20px 30px;
+    margin: 20px;
+    font-size: 16px;
+}
+
+.lightbluebox{
+    background-color: rgb(175, 230, 255);
+    text-align: center;
+    padding: 20px 30px;
     margin: 20px;
     font-size: 16px;
 }
 
 .space{
     margin-top: 40px;
+}
+
+.center_wrapper{
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
