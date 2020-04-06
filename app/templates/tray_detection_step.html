@@ -60,6 +60,22 @@
         We tried another implementation of YOLOv3 based on Darknet [AlexeyAB darknet] 
         which was written in C language and supported half-precision inference.
     </p>
+    
+    <h2 class="space"> SORT </h2>
+    <p class="long_text">
+        SORT (Simple Online and Realtime Tracking) is an algorithm for multiple object tracking.
+        From the bounding boxes returned by Yolov3 between consecutive frames, we can make
+        use of space locality to track the object. Briefly speaking, the algorithm linearly
+        assigns incoming bounding boxes with previous bounding boxes with respect to 
+        IOU (intersection over union). For more details, please go to
+        <a href="https://arxiv.org/pdf/1602.00763.pdf"> https://arxiv.org/pdf/1602.00763.pdf</a> 
+    </p>
+    <div class="center_wrapper">
+        <img src='static/images/SORT.png'/>        
+    </div>
+    <p class="long_text">
+        If images are assigned to each other, they have the same <b>object_id</b>.
+    </p>
 
     <h2 class="space"> SlimYolov3 </h2>
     <p class='greybox'>

@@ -18,3 +18,10 @@
 #classify_eaten_classifier_content > div > h2{
     text-align: center;
 }
+
+#classify_eaten_image_layout{
+    display: flex;
+    justify-content: space-between;    
+    flex-direction: row;
+    margin: 50px 20px;
+}

@@ -10,8 +10,45 @@
     </li>
 </ul>
 
-<div id="classify_eaten_introduction_content" class="hidden">
-    a
+<div id="classify_eaten_introduction_content" class="hidden intro_container">
+  <p class="title">Eaten VS Uneaten Step</p>
+
+  <h2 class="space"> Main Objective </h2>  
+  <p class='greybox'>
+      From the collection of tray images, we need to classify whether it is eaten or uneaten.    
+  </p>  
+  <div id="classify_eaten_image_layout">
+    <div class="vertical_wrapper center_wrapper">
+      <div>
+        <img src='static/images/uneaten_1.jpg' width=200 style="margin: 10px"/>
+        <img src='static/images/uneaten_2.jpg' width=200 style="margin: 10px"/>
+      </div>
+      <figcaption>Examples of uneaten food</figcaption>
+    </div>
+    <div class="vertical_wrapper center_wrapper">
+      <div>
+        <img src='static/images/eaten_1.jpg' width=200 style="margin: 10px"/>
+        <img src='static/images/eaten_2.jpg' width=200 style="margin: 10px"/>
+      </div>
+      <figcaption>Examples of eaten food</figcaption>
+    </div>
+  </div>
+  <p class='long_text'>
+      As you will see later, the classification will be helpful for pairing the trays, and
+      doing comparison between food before they are eaten and after they are eaten.
+  </p>
+
+  <h2 class="space"> Resnet50 </h2>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/resnet.png'/>
+    <figcaption><a href="https://arxiv.org/pdf/1512.03385.pdf">
+      source: https://arxiv.org/pdf/1512.03385.pdf
+    </a></figcaption>
+  </div>
+  <p class='long_text'>
+    We are using the classic Resnet-50 for this binary classification. 
+  </p>
+
 </div>
 
 <div id="classify_eaten_classifier_content" class="hidden">
