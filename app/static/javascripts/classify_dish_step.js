@@ -6,6 +6,7 @@
     var classify_dish_progess_bar;
     var classify_dish_infer_time_chart;
     var classify_dish_gallery;
+    var intro_gallery;
     var color = d3.scaleOrdinal()
         .domain(["bbq", "two_choices", "delicacies", "japanese", "teppanyaki", "veggies"])
         .range(["rgb(252,186,3)", "rgb(122,149,255)", "rgb(235,157,252)"
@@ -56,6 +57,31 @@
 
         classify_dish_gallery = gallery("#classify_dish_classifier_content", [])
         classify_dish_gallery.set_description(wrappers => {
+            wrappers.selectAll(".dish_tag")
+                .data(d => [d.dish])
+                .join("div")
+                .attr("class", "dish_tag")
+                .style('background', d => color(d))
+                .text(d => d)
+                .style("text-align", "center")
+        })
+
+        var gallery_config = {
+            row_size: 6,
+            max_size: 6,
+            mh: 20,
+            absolute_path: false
+        }
+        var data = [
+            {path: 'static/images/bbq.jpg', dish: 'bbq'},
+            {path: 'static/images/two_choices.jpg', dish: 'two_choices'},
+            {path: 'static/images/delicacies.jpg', dish: 'delicacies'},
+            {path: 'static/images/japanese.jpg', dish: 'japanese'},
+            {path: 'static/images/teppanyaki.jpg', dish: 'teppanyaki'},
+            {path: 'static/images/veggies.jpg', dish: 'veggies'}
+        ]
+        intro_gallery = gallery("#classify_dish_intro_gallery", data, gallery_config)
+        intro_gallery.set_description(wrappers => {
             wrappers.selectAll(".dish_tag")
                 .data(d => [d.dish])
                 .join("div")

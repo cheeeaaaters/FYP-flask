@@ -7,6 +7,8 @@ function gallery(selection, tray_detection_data, config) {
     var mh = config.mh || 15
     var mv = config.mv || 10
     var max_size = config.max_size || 20
+    var absolute_path = config.absolute_path || true
+    var path_prefix = absolute_path ? '/my_images/' : ''
     var description;
     var onClick;
 
@@ -29,7 +31,7 @@ function gallery(selection, tray_detection_data, config) {
             .style("flex-direction", "column")
 
         wrappers.selectAll("img")
-            .data(d => ['/my_images/' + d.path])
+            .data(d => [path_prefix + d.path])
             .join("img")
             .attr("src", p => p)
             .attr("width", image_width)
@@ -42,6 +44,8 @@ function gallery(selection, tray_detection_data, config) {
 
     }
 
+    update_gallery(tray_detection_data)
+
     return {
         append: function (path) {
             tray_detection_data.unshift(path)
@@ -50,9 +54,11 @@ function gallery(selection, tray_detection_data, config) {
         },
         set_description: function (f) {
             description = f
+            update_gallery(tray_detection_data)
         },
         set_on_click: function (f) {
             onClick = f
+            update_gallery(tray_detection_data)
         }
     }
 

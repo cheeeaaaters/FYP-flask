@@ -10,8 +10,39 @@
     </li>
 </ul>
 
-<div id="classify_dish_introduction_content" class="hidden">
-    a
+<div id="classify_dish_introduction_content" class="hidden intro_container">
+  <p class="title">Classify Dish Type Step</p>
+
+  <h2 class="space"> Main Objective </h2>  
+  <p class='greybox'>
+      From the collection of tray images, we need to classify which station / restaurant it comes from.    
+  </p>    
+  <p class='long_text'>
+      The classification will be helpful for pairing the trays, and
+      doing data analysis related to each station.
+  </p>
+
+  <h2 class="space"> Dish Type </h2>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/canteen.jpg' width=800/>
+    <figcaption>the layout of the canteen</figcaption>
+  </div>
+  <p class='greybox'>
+    There are 6 main stations in the LG1 canteen, namely, bbq, delicacies, two choices, veggies, teppanyaki and japanese.     
+  </p> 
+  <div id='classify_dish_intro_gallery' class='gallery_container'>    
+  </div>
+
+  <h2 class="space"> Resnet50 </h2>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/resnet.png'/>
+    <figcaption><a href="https://arxiv.org/pdf/1512.03385.pdf">
+      source: https://arxiv.org/pdf/1512.03385.pdf
+    </a></figcaption>
+  </div>
+  <p class='long_text'>
+    We are using the classic Resnet-50 for this classification. 
+  </p>
 </div>
 
 <div id="classify_dish_classifier_content" class="hidden gallery_container">
