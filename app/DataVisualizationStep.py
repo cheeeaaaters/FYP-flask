@@ -1,6 +1,7 @@
 from .Step import Step
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
+from flask import render_template, url_for
 
 class DataVisualizationStep(Step):
 
@@ -9,15 +10,30 @@ class DataVisualizationStep(Step):
         self.context["step_id"] = 8
         self.context["step_name"] = "data_visualization_step"
 
-    def start(self):
+    #If you wish to add something to start...
+    def start(self): 
+        #Add something before calling super().start()
+        #super().start()   
         pass
 
+    #If you wish to add something to stop...
     def stop(self):
-        pass
+        #Add something before calling super().stop()
+        super().stop()     
 
     def render(self):
-        return 'Work In Progress.'
+        return render_template('data_visualization_step.html')
+
+    def render_sidebar(self):
+        return render_template('data_visualization_step_sb.html')
+
+    def requested(self):        
+        emit('init_mc', namespace='/data_visualization_step')        
+
+    def requested_sidebar(self):        
+        emit('init_sb', namespace='/data_visualization_step')
+
 
     @bind_socketio('/data_visualization_step')
-    def step_process(self, input):
+    def test(self, input):
         pass

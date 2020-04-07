@@ -9,6 +9,10 @@
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/list_group.css')}}">
 <link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/list_group.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/gallery.css')}}">
+<link rel="stylesheet"
       href="{{url_for('.static', filename='styles/data_visualization_step.css')}}">
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/tray_detection_step.css')}}">
@@ -20,6 +24,8 @@
       href="{{url_for('.static', filename='styles/classify_dish_step.css')}}">
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/segmentation_step.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/multilabel_step.css')}}">
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/pair_step.css')}}">
 {% endblock %}
@@ -40,6 +46,8 @@
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/list_group.js')}}"></script>
 <script type="text/javascript"
+        src="https://unpkg.com/d3-simple-slider"></script>
+<script type="text/javascript"
         src="{{url_for('static', filename='javascripts/data_visualization_step.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/cross_point.js')}}"></script>
@@ -55,6 +63,10 @@
         src="{{url_for('static', filename='javascripts/segmentation_step.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/pair_step.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/multilabel_step.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/data_visualization_content.js')}}"></script>
 {% endblock %}
 
 {% block navbar %}

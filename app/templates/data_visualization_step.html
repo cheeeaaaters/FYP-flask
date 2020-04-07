@@ -1,27 +1,3 @@
-{% extends 'bootstrap/base.html' %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet"
-      href="{{url_for('.static', filename='styles/data_visualization_step.css')}}">
-{% endblock %}
-
-{% block scripts %}
-{{super()}}
-<script type="text/javascript"
-        src="{{url_for('static', filename='javascripts/d3.min.js')}}"></script>
-<script type="text/javascript"
-        src="https://unpkg.com/d3-simple-slider"></script>
-<script type="text/javascript"
-        src="{{url_for('static', filename='javascripts/data_visualization_step.js')}}"></script>
-{% endblock %}
-
-{% block title %}
-    Food Waste Analysis
-{% endblock %}
-
-{% block content %}
-
 <h1>Analysis Without Pairs</h1>
 
 <h1>What is the average portion of food of each class?</h1>
@@ -36,5 +12,3 @@
 <h1>Analysis With Pairs</h1>
 <h1>How are the pairs distributed?</h1>
 <svg id="p_1"></svg>
-
-{% endblock %}

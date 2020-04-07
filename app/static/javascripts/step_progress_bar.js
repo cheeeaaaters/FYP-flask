@@ -54,15 +54,6 @@ $("#segmentation_step").on('click', function() {
     }      
 });
 
-$("#pixel_count_step").on('click', function() {
-    let step = 'PixelCountStep'
-    if(cur_step != step){
-        mc_mng.switchToStep(step)
-        sb_mng.switchToStep(step)
-        cur_step = step
-    }      
-});
-
 $("#multi_label_step").on('click', function() {
     let step = 'MultiLabelStep'
     if(cur_step != step){

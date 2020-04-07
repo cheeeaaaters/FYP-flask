@@ -1,0 +1,17 @@
+.tag_rice{
+    fill: yellow;
+    stroke-width: 1px;
+    stroke: black;
+}
+
+.tag_vegetable{
+    fill: green;
+    stroke-width: 1px;
+    stroke: black;
+}
+
+.tag_meat{
+    fill: red;
+    stroke-width: 1px;
+    stroke: black;
+}

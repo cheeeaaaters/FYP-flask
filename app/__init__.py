@@ -31,6 +31,8 @@ from app import ClassifyEatenStep
 from app import ClassifyDishStep
 from app import SegmentationStep
 from app import PairStep
+from app import MultiLabelStep
+from app import DataVisualizationStep
 
 socketio_helper.add_socketio()
 
