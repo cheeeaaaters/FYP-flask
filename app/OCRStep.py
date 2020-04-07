@@ -107,7 +107,17 @@ class OCRStep(Step):
             'ocr_text': ['a','b','c'],
             'ocr': "0001"
         }
+        obj2 = {
+            'mode': 1,
+            'percentage': 0.1,
+            'path': url_for('static', filename='images/food.jpg'),
+            'locate_time': 0.1,
+            'ocr_time': 0.1,
+            'ocr_text': ['a','b','c'],
+            'ocr': "0001"
+        }
         emit('display', obj, namespace='/ocr_step')
+        emit('display', obj2, namespace='/ocr_step')
 
 
     # If you wish to add something to stop...

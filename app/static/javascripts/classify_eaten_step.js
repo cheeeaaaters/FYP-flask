@@ -62,7 +62,8 @@ classify_eaten_socket.on('init_mc', function () {
     var gallery_config = {
         row_size: 3,
         max_size: 9,
-        mh: 20
+        mh: 20,
+        absolute_path: false
     }
     classify_eaten_gallery = gallery("#gallery_eaten", [], gallery_config)
     classify_uneaten_gallery = gallery("#gallery_uneaten", [], gallery_config)

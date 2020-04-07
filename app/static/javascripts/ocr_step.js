@@ -95,7 +95,8 @@ ocr_socket.on('init_mc', function () {
 
     var gallery_config = {
         row_size: 1,
-        max_size: 5
+        max_size: 5,
+        absolute_path: false
     }
 
     gallery_0 = gallery("#gallery_0", [], gallery_config)
@@ -103,7 +104,7 @@ ocr_socket.on('init_mc', function () {
     gallery_180 = gallery("#gallery_180", [], gallery_config)
     gallery_270 = gallery("#gallery_270", [], gallery_config)
 
-    ocr_gallery = gallery("#ocr_polling_content", [])
+    ocr_gallery = gallery("#ocr_polling_content", [], {absolute_path: false})
     ocr_gallery.set_description(wrappers => {
         wrappers.selectAll("text")
             .data(d => [d.ocr])

@@ -15,11 +15,14 @@
 
   <h2 class="space"> Main Objective </h2>  
   <p class='greybox'>
-      From the collection of tray images, we need to classify which station / restaurant it comes from.    
+      From the list of pairs, we need to know how much food of each type is consumed.    
   </p>    
   <p class='long_text'>
-      The classification will be helpful for pairing the trays, and
-      doing data analysis related to each station.
+      For each image of the pair, we can give it a label of food quantity : 
+      none / some / many, refering to how much food is there. Note that the segmentation
+      step can achieve the same thing by pixel counting. However, using classification
+      may achieve a more "human" result, since pixel counting only cares about the area of food,
+      and is vulnerable to occlusion.
   </p>
 </div>
 

@@ -7,7 +7,8 @@ function gallery(selection, tray_detection_data, config) {
     var mh = config.mh || 15
     var mv = config.mv || 10
     var max_size = config.max_size || 20
-    var absolute_path = config.absolute_path || true
+    var absolute_path = (config.absolute_path === undefined) ? true : config.absolute_path
+    //var absolute_path = false
     var path_prefix = absolute_path ? '/my_images/' : ''
     var description;
     var onClick;
@@ -155,24 +156,9 @@ function multilabel_gallery(selection, tray_detection_data, config) {
             .attr("width", image_width)
             .style("margin-right", (d, i) => (i == 0 ? pair_mh + "px" : "0px"))
 
-        wrappers.call(tag)
-        /*
-        wrappers.selectAll("img")
-            .data(d => [path_prefix + d.path])
-            .join("img")
-            .attr("src", p => p)
-            .attr("width", image_width)
-
-        if(description)
-            wrappers.call(description)
-
-        if(onClick)
-            wrappers.on('click', onClick)
-            */
+        wrappers.call(tag)    
 
     }
-
-
 
     update_gallery(tray_detection_data)
 
