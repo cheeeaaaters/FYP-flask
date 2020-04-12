@@ -12,6 +12,7 @@ class Step():
         }
         self.running = False
         self.coroutine = None
+        self.started = False
 
     #This function will be called when you press the start button
     def start(self): 

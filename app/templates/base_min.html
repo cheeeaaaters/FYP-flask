@@ -7,6 +7,8 @@
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/common.css')}}">
 <link rel="stylesheet"
+      href="{{url_for('.static', filename='styles/step_modal.css')}}">
+<link rel="stylesheet"
       href="{{url_for('.static', filename='styles/list_group.css')}}">
 <link rel="stylesheet"
       href="{{url_for('.static', filename='styles/list_group.css')}}">
@@ -35,6 +37,10 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/main_content_manager.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/modal_manager.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/step_modal.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/sidebar_manager.js')}}"></script>
 <script type="text/javascript"
@@ -87,6 +93,8 @@
 
 {% block content %}
 
+<div class="modal">
+</div>
 <div class="wrapper">    
     <nav id="sidebar">
     </nav>

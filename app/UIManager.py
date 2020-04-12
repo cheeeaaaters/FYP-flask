@@ -151,3 +151,18 @@ def start_button_handler():
 def pause_button_handler():
     nav_button_manager.pause_button_handler()
 ##########################################################
+
+#Python interface of modal for js
+class ModalManager():
+
+    def __init__(self):
+        pass
+    
+    def show(self, template):
+        emit('show', template, namespace='/modal')
+
+    def hide(self):
+        emit('hide', namespace='/modal')
+
+##########################################################
+modal_manager = ModalManager()
