@@ -12,6 +12,7 @@ import glob
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
+#test
 
 '''
     output = {
