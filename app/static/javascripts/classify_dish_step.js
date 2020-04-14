@@ -55,7 +55,7 @@
             classify_dish_tabs.infer_time.removeClass('hidden')
         })
 
-        classify_dish_gallery = gallery("#classify_dish_classifier_content", [])
+        classify_dish_gallery = gallery("#classify_dish_classifier_content", [], {absolute_path: false})
         classify_dish_gallery.set_description(wrappers => {
             wrappers.selectAll(".dish_tag")
                 .data(d => [d.dish])

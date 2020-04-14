@@ -52,7 +52,7 @@ class ClassifyDishStep(Step):
         #super().start()       
         obj = {
             'name': "food.jpg",
-            'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
+            'path': url_for('static', filename='images/food.jpg'),
             'percentage': 0.1,
             'infer_time': 0.1,
             'dish': 'bbq'

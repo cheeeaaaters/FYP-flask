@@ -48,8 +48,7 @@
             for (const key in segmentation_tabs) {
                 segmentation_tabs[key].addClass('hidden')
             }
-            segmentation_tabs.pixel_info.removeClass('hidden')  
-            two_images = cross_point("#cross_point_container")        
+            segmentation_tabs.pixel_info.removeClass('hidden')                     
         })
         
         $("#segmentation_infer_time").on('click', () => {
@@ -63,10 +62,11 @@
             row_size: 1,
             max_size: 3,
             image_width: 900,
-            mv: 30
+            mv: 30,
+            absolute_path: false
         }
         segmentation_gallery = gallery("#segmentation_gallery", [], gallery_config)
-        
+        two_images = cross_point("#cross_point_container")         
         segmentation_infer_time_chart = lineChart('#segmentation_infer_time_graph', [], {width: 1000, height: 300})
         
         for (const key in segmentation_tabs) {

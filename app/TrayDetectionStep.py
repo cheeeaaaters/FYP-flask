@@ -10,11 +10,8 @@ import sys
 import os
 import glob
 
-'''
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-import object_tracker_4 as Yolo
-'''
 
 '''
     output = {
@@ -48,6 +45,7 @@ class TrayDetectionStep(Step):
 
     def step_process(self):
         print("Start Process...")
+        import object_tracker_4 as Yolo
 
         # get the inputs
         # TODO: Optionally can make video also an input stream
@@ -57,8 +55,8 @@ class TrayDetectionStep(Step):
             # TODO: pass the input to yolov3
             # preresquisite: usage of yield
             # outputStream is a generator
-            # outputStream = Yolo.process([video])
-            outputStream = []
+            outputStream = Yolo.process([video])
+            # outputStream = []
             (area, date_start, date_end) = self.convert_video(video)
             delta = date_end - date_start
 
@@ -94,26 +92,19 @@ class TrayDetectionStep(Step):
 
                 # It will wait on this yield statement
                 yield
-
-        '''
-        outputStream = FakeTrayDetection.process(videos)
-        for tray in outputStream:
-            emit('display', tray.path, namespace='/tray_detection_step')
-            print("One Loop Pass")
-            yield
-        '''
-        # TODO: update the html to indicate the process has finished
-        emit('finish', {}, namespace='/tray_detection_step')
+        from app.UIManager import main_content_manager
+        main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
 
     # If you wish to add something to start...
     def start(self):
         if self.started:
             print("start.....")
+            #super.start()
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', num=Video.query.count()))
             #self.started = True
-            #super.start()
+            
 
     # If you wish to add something to stop...
     def stop(self):
@@ -179,8 +170,8 @@ class TrayDetectionStep(Step):
         if status['step'] == "TrayDetectionStep" and status['code'] != 0:
             obj={
                 'name': "food.jpg",
-                # 'path': url_for('static', filename='images/food.jpg'),
-                'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
+                'path': url_for('static', filename='images/food.jpg'),
+                #'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
                 'percentage': 0.1,
                 'infer_time': 0.1,
                 'video_path': 'test video path',

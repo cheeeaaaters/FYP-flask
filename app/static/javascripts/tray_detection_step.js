@@ -1,3 +1,5 @@
+(function() {
+
 var tray_detection_socket = io('/tray_detection_step');
 
 var tray_detection_progess_bar;
@@ -53,7 +55,7 @@ tray_detection_socket.on('init_mc', function () {
         tray_detection_tabs.infer_time.removeClass('hidden')        
     })
 
-    tray_gallery = gallery("#tray_detection_gallery_content", [])
+    tray_gallery = gallery("#tray_detection_gallery_content", [], {absolute_path: false})
     tray_gallery.set_description(wrappers => {
         wrappers.selectAll("text")
             .data(d => [d.name])
@@ -66,7 +68,8 @@ tray_detection_socket.on('init_mc', function () {
         details.select('.img_wrapper')
                 .style('margin-left', "50px")
                 .selectAll('img')
-                .data(['/my_images/' + d.path])
+                //.data(['/my_images/' + d.path])
+                .data([d.path])
                 .join('img')
                 .attr('src', p => p)
                 .attr('width', 500)        
@@ -92,8 +95,4 @@ tray_detection_socket.on('init_mc', function () {
 
 })
 
-tray_detection_socket.on('finish', function () {
-    $('#test').html("FINISH")
-});
-
-
+})()

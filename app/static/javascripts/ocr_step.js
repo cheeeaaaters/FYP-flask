@@ -1,3 +1,5 @@
+(function() {
+
 var ocr_socket = io('/ocr_step');
 
 var chart;
@@ -128,4 +130,4 @@ ocr_socket.on('finish', function () {
     $('#test').html("FINISH")
 });
 
-
+})()
