@@ -11,17 +11,24 @@ var gallery_90;
 var gallery_180;
 var gallery_270;
 var ocr_gallery;
-var i = 1;
+var i1 = 1;
+var i2 = 1;
+var i3 = 1;
 
 ocr_socket.on('display', function (tray) {  
     chart.update(tray.percentage* 100)   
     
     if (tray.mode == 1){
-        gallery_0.append(tray)
-        gallery_90.append(tray)
-        gallery_180.append(tray)
-        gallery_270.append(tray)
+
+        gallery_0.append({path: tray.paths[0]})
+        gallery_90.append({path: tray.paths[1]})
+        gallery_180.append({path: tray.paths[2]})
+        gallery_270.append({path: tray.paths[3]})
+        ocr_infer_time_chart.add({x: i1, y: tray.time})
+        i1 += 1
+
     }else if (tray.mode == 2){
+
         var ocr_content = d3.select("#ocr_ocr_content")
         ocr_content.select('.img_wrapper')
                     .style('margin-left', "50px")
@@ -40,8 +47,16 @@ ocr_socket.on('display', function (tray) {
                     .data(tray.ocr_text)
                     .join('li')
                     .text(d => d)
+        
+        ocr_locate_time_chart.add({x: i2, y: tray.locate_time})
+        i2 += 1
+        ocr_ocr_time_chart.add({x: i3, y: tray.ocr_time})
+        i3 += 1
+
     }else if (tray.mode == 3){
-        ocr_gallery.append(tray)
+
+        tray.paths.forEach(d => ocr_gallery.append({path: d}))        
+
     }
    
 });
@@ -98,7 +113,7 @@ ocr_socket.on('init_mc', function () {
     var gallery_config = {
         row_size: 1,
         max_size: 5,
-        absolute_path: false
+        absolute_path: true
     }
 
     gallery_0 = gallery("#gallery_0", [], gallery_config)
@@ -106,7 +121,7 @@ ocr_socket.on('init_mc', function () {
     gallery_180 = gallery("#gallery_180", [], gallery_config)
     gallery_270 = gallery("#gallery_270", [], gallery_config)
 
-    ocr_gallery = gallery("#ocr_polling_content", [], {absolute_path: false})
+    ocr_gallery = gallery("#ocr_polling_content", [], {absolute_path: true})
     ocr_gallery.set_description(wrappers => {
         wrappers.selectAll("text")
             .data(d => [d.ocr])
@@ -125,9 +140,5 @@ ocr_socket.on('init_mc', function () {
     ocr_tabs.introduction.removeClass('hidden')     
 
 })
-
-ocr_socket.on('finish', function () {
-    $('#test').html("FINISH")
-});
 
 })()

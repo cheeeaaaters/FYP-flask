@@ -25,6 +25,7 @@ class OCRStep(Step):
         self.context["step_id"] = 1
         self.context["step_name"] = "ocr_step"
         self.coroutine = self.step_process()
+        self.mode = 1
         print("OCR Step Created")
 
     def step_process(self):
@@ -47,12 +48,15 @@ class OCRStep(Step):
         '''
         outputStream = PreProcessing.process(input_trays)
         for info in outputStream:
+            info['mode'] = self.mode
             emit('display', info, namespace='/ocr_step')
             eventlet.sleep(0)
             yield
 
         self.stop()
         yield
+
+        self.mode = 2
 
         # demo.py
         '''
@@ -67,6 +71,7 @@ class OCRStep(Step):
         '''
         outputStream = OCR.process()
         for info in outputStream:
+            info['mode'] = self.mode
             emit('display', info, namespace='/ocr_step')
             eventlet.sleep(0)
             yield
@@ -74,51 +79,40 @@ class OCRStep(Step):
         self.stop()
         yield
 
+        self.mode = 3
+
         # count.py
         '''
         output = {
             'regex': None,
             'ocr': None,
-            'object_id': None
+            'object_id': None,
+            'percentage': 0
         }
         '''
         outputStream = Polling.process()
         for info in outputStream:
-            emit('display', info, namespace='/ocr_step')
-            eventlet.sleep(0)
+            info['mode'] = self.mode
             pattern = info['regex']
+            info['paths'] = []
             for target in Tray.query.filter(Tray.path.like('%'+pattern+'%')).filter_by(object_id=info['object_id']).all():
                 target.ocr = info['ocr']
+                info['paths'].append(target.path)
+            emit('display', info, namespace='/ocr_step')
+            eventlet.sleep(0)        
             yield
 
         # TODO: update the html to indicate the process has finished
-        emit('finish', {}, namespace='/ocr_step')
+        from app.UIManager import main_content_manager
+        main_content_manager.switch_to_step(globs.step_objects['ClassifyEatenStep'])
+        self.mode = 1
 
-    # If you wish to add something to start...
-    def start(self):
-        # Add something before calling super().start()
-        #super().start()
-        obj = {
-            'mode': 3,
-            'percentage': 0.1,
-            'path': url_for('static', filename='images/food.jpg'),
-            'locate_time': 0.1,
-            'ocr_time': 0.1,
-            'ocr_text': ['a','b','c'],
-            'ocr': "0001"
-        }
-        obj2 = {
-            'mode': 1,
-            'percentage': 0.1,
-            'path': url_for('static', filename='images/food.jpg'),
-            'locate_time': 0.1,
-            'ocr_time': 0.1,
-            'ocr_text': ['a','b','c'],
-            'ocr': "0001"
-        }
-        emit('display', obj, namespace='/ocr_step')
-        emit('display', obj2, namespace='/ocr_step')
-
+    def start(self):        
+        if self.started:            
+            super.start()
+        else:
+            from app.UIManager import modal_manager            
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(ocr=None).count()))   
 
     # If you wish to add something to stop...
     def stop(self):
@@ -141,6 +135,9 @@ class OCRStep(Step):
     def convert_to_json(self, input):
         return {}
 
-    @bind_socketio('/ocr_step')
-    def test(self, input):
-        pass
+    @bind_socketio('/modal')
+    def modal_status(self, status):        
+        if status['step'] == "OCRStep" and status['code'] != 0:
+            self.started = True
+            super.start()
+            

@@ -167,5 +167,6 @@ class TrayDetectionStep(Step):
     @bind_socketio('/modal')
     def modal_status(self, status):        
         if status['step'] == "TrayDetectionStep" and status['code'] != 0:
-            super.start()
             self.started = True
+            super.start()
+            

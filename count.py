@@ -6,13 +6,20 @@ root = os.path.dirname(__file__)
 rootdir = os.path.join(root, 'OCR_text')
 
 def process():
+    f_count = 0
+    for subdir, dirs, files in os.walk(rootdir):
+        for filename in files:
+            f_count += 1
+    
+    i = 0
     for subdir, dirs, files in os.walk(rootdir):
         for filename in files:
 
             output = {
                 'regex': None,
                 'ocr': None,
-                'object_id': None
+                'object_id': None,
+                'percentage': i/(f_count+0.0001)
             }
 
             path_parts = os.path.normpath(subdir).split(os.path.sep)
