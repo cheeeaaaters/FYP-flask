@@ -34,6 +34,7 @@ class Step():
     #This function will be called when you press the stop button
     def stop(self):
         self.running = False
+        self.started = False
         print("step stop!") 
 
     #should return an HTML string

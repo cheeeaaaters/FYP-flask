@@ -12,7 +12,6 @@ import glob
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-#test
 
 '''
     output = {
@@ -28,7 +27,6 @@ sys.path.insert(1, path_to_yolo)
     }
 '''
 
-
 class TrayDetectionStep(Step):
 
     def __init__(self):
@@ -37,12 +35,6 @@ class TrayDetectionStep(Step):
         self.context["step_name"] = "tray_detection_step"
         self.coroutine = self.step_process()
         print("Tray Detection Step Created!")
-        '''
-        for v in glob.glob("/home/ubuntu/CanteenPreProcessing/data/videos/**/*.mov", recursive=True):
-            video = Video(path=v)
-            db.session.add(video)
-            db.session.commit()
-        '''
 
     def step_process(self):
         print("Start Process...")
@@ -81,14 +73,22 @@ class TrayDetectionStep(Step):
 
                     # Optional: this code could be inside the callback
                     # TODO: insert to database
-                    new_tray = Tray(path=tray["path"],
-                                    object_id=tray["obj_id"],
-                                    video=video,
-                                    area=area,
-                                    date_time=date_start+delta*tray["percentage"])
-                    db.session.add(new_tray)
+                    info_dict = {
+                        'path': tray["path"],
+                        'object_id': tray["obj_id"],
+                        'video': video,
+                        'area': area,
+                        'date_time': date_start+delta*tray["percentage"]
+                    }
+                    
+                    same_tray = Tray.query.filter_by(path=new_tray.path).first()
+                    if not same_tray:
+                        new_tray = Tray(**info_dict)
+                        db.session.add(new_tray)
+                    else:
+                        same_tray.update(info_dict)
+                    
                     db.session.commit()
-
                     print("One Loop Pass")
 
                 # It will wait on this yield statement
@@ -98,13 +98,11 @@ class TrayDetectionStep(Step):
 
     # If you wish to add something to start...
     def start(self):
-        if self.started:
-            print("start.....")
-            #super.start()
+        if self.started:            
+            super.start()
         else:
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=Video.query.count()))
-            #self.started = True
+            modal_manager.show(render_template('step_modal.html', num=Video.query.count()))           
             
 
     # If you wish to add something to stop...
@@ -169,15 +167,5 @@ class TrayDetectionStep(Step):
     @bind_socketio('/modal')
     def modal_status(self, status):        
         if status['step'] == "TrayDetectionStep" and status['code'] != 0:
-            obj={
-                'name': "food.jpg",
-                'path': url_for('static', filename='images/food.jpg'),
-                #'path': 'C:/Users/cheee/Desktop/UST/fyp/food.jpg',
-                'percentage': 0.1,
-                'infer_time': 0.1,
-                'video_path': 'test video path',
-                'obj_id': 1,
-                'area': 'bbq',
-                'date_time': datetime.now().strftime("%d-%b-%Y (%H:%M:%S)")
-            }   
-            emit('display', obj, namespace='/tray_detection_step')
+            super.start()
+            self.started = True
