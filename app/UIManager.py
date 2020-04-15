@@ -3,66 +3,6 @@ from app import socketio
 from flask_socketio import emit
 
 #Python interface of main content for js
-class MainContentManager():
-
-    first_step = globs.step_objects['TrayDetectionStep']    
-
-    def __init__(self):
-        self.change_cur_to(self.first_step)
-
-    def change_cur_to(self, step_obj):
-        globs.cur_step = step_obj
-
-    #js requests html
-    def request_first_step(self):
-        return self.request_step(self.first_step)
-
-    #js requests html
-    def request_step(self, step_obj):
-        if step_obj != None:
-            return step_obj.render()
-        else:
-            return 'step object is not created.'
-    
-    #python function to communicate to the main content ui
-    def switch_to_first_step(self):  
-        def cb():
-            self.change_cur_to(self.first_step)
-            self.first_step.requested()
-        emit('request', self.request_first_step(), 
-        callback=cb,
-        namespace='/main_content')
-
-    #python function to communicate to the main content ui
-    def switch_to_step(self, step_obj):
-        def cb():
-            self.change_cur_to(step_obj)
-            step_obj.requested()
-        if step_obj != None:
-            emit('request', self.request_step(step_obj), 
-            callback=cb,
-            namespace='/main_content')
-
-##########################################################
-main_content_manager = MainContentManager()
-
-@socketio.on('request', namespace='/main_content')
-def request_main_step():
-    main_content_manager.change_cur_to(main_content_manager.first_step)
-    return main_content_manager.request_first_step()
-
-@socketio.on('request_step', namespace='/main_content')
-def request_step(step):
-    step = globs.step_objects[step]
-    main_content_manager.change_cur_to(step)
-    return main_content_manager.request_step(step)
-
-@socketio.on('request_success', namespace='/main_content')
-def request_success():    
-    globs.cur_step.requested()
-##########################################################
-
-#Python interface of main content for js
 class SidebarManager():
 
     first_step = globs.step_objects['TrayDetectionStep']    
@@ -120,6 +60,70 @@ def request_step_sb(step):
 @socketio.on('request_success_sidebar', namespace='/sidebar')
 def request_success_sb():
     globs.cur_step.requested_sidebar()
+##########################################################
+
+#Python interface of main content for js
+class MainContentManager():
+
+    first_step = globs.step_objects['TrayDetectionStep']    
+
+    def __init__(self):
+        self.change_cur_to(self.first_step)
+
+    def change_cur_to(self, step_obj):
+        globs.cur_step = step_obj
+
+    #js requests html
+    def request_first_step(self):
+        return self.request_step(self.first_step)
+
+    #js requests html
+    def request_step(self, step_obj):
+        if step_obj != None:
+            return step_obj.render()
+        else:
+            return 'step object is not created.'
+    
+    #python function to communicate to the main content ui
+    def switch_to_first_step(self):  
+        def cb():
+            self.change_cur_to(self.first_step)
+            self.first_step.requested()
+        emit('request', self.request_first_step(), 
+        callback=cb,
+        namespace='/main_content')
+        sidebar_manager.switch_to_first_step()
+        emit('switch_cur_step', 'TrayDetectionStep', namespace='/main_content')
+
+    #python function to communicate to the main content ui
+    def switch_to_step(self, step_obj):
+        def cb():
+            self.change_cur_to(step_obj)
+            step_obj.requested()            
+        if step_obj != None:
+            emit('request', self.request_step(step_obj), 
+            callback=cb,
+            namespace='/main_content')
+            sidebar_manager.switch_to_step(step_obj)
+            emit('switch_cur_step', step_obj.cls_name, namespace='/main_content')
+
+##########################################################
+main_content_manager = MainContentManager()
+
+@socketio.on('request', namespace='/main_content')
+def request_main_step():
+    main_content_manager.change_cur_to(main_content_manager.first_step)
+    return main_content_manager.request_first_step()
+
+@socketio.on('request_step', namespace='/main_content')
+def request_step(step):
+    step = globs.step_objects[step]
+    main_content_manager.change_cur_to(step)
+    return main_content_manager.request_step(step)
+
+@socketio.on('request_success', namespace='/main_content')
+def request_success():    
+    globs.cur_step.requested()
 ##########################################################
 
 #Python interface of nav nuttons for js

@@ -17,6 +17,7 @@ def add_socketio():
         if globs.step_objects[class_name] == None:
             cls = getattr(sys.modules["app."+class_name], class_name)
             step = cls()
+            step.cls_name = class_name
             globs.step_objects[class_name] = step
             for func, namespace in globs.step_socketio_methods[class_name]:                
                 socketio.on_event(func.__name__, partial(func, step), namespace=namespace)

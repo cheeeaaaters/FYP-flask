@@ -6,6 +6,7 @@ from app import db
 from app.DBModels import Tray
 import sys
 import os
+from app import globs
 import eventlet
 
 '''

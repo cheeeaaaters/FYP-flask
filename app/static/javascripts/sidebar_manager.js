@@ -7,8 +7,9 @@ sidebar_socket.on('connect', function() {
     });
 });
 
-sidebar_socket.on('request', function(html_text) {
+sidebar_socket.on('request', function(html_text, cb) {
     sb_mng.replaceContent(html_text)
+    cb()
 });
 
 //namespace 

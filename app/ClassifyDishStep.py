@@ -5,6 +5,7 @@ from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray
 import sys, os
+from app import globs
 import eventlet
 
 path_to_dish_classifier = ''

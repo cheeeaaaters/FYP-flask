@@ -6,6 +6,7 @@ from datetime import timedelta
 from collections import Counter
 from app import db
 from app.DBModels import *
+from app import globs
 
 one_minute = timedelta(seconds=60)
 eat_min = timedelta(minutes=10)
@@ -147,16 +148,21 @@ class PairStep(Step):
                 print(pair.before_tray)
                 print(pair.after_tray)
 
-        # TODO: update the html to indicate the process has finished
-        emit('finish', {}, namespace='/pair_step')
+        from app.UIManager import main_content_manager
+        main_content_manager.switch_to_step(globs.step_objects['MultiLabelStep'])
 
     # If you wish to add something to start...
     def start(self):
         # Add something before calling super().start()
-        self.step_process()
-
+        if self.started:            
+            self.step_process()
+            self.stop()
+        else:
+            from app.UIManager import modal_manager
+            modal_manager.show(render_template('step_modal.html', 
+                num=Tray.query.filter((Tray.pair_before == None) & (Tray.pair_after == None)).count()))
+        
     # If you wish to add something to stop...
-
     def stop(self):
         # Add something before calling super().stop()
         super().stop()
@@ -173,10 +179,12 @@ class PairStep(Step):
     def requested_sidebar(self):
         emit('init_sb', namespace='/pair_step')
 
-    # TODO: convert tray to json to pass to js
-    def convert_to_json(self, input):
-        return {}
-
     @bind_socketio('/pair_step')
     def change_state(self, state):
         self.state = state
+
+    @bind_socketio('/modal')
+    def modal_status(self, status):        
+        if status['step'] == "PairStep" and status['code'] != 0:
+            self.started = True
+            self.start()

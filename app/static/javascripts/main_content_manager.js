@@ -7,9 +7,14 @@ main_content_socket.on('connect', function() {
     });
 });
 
-main_content_socket.on('request', function(html_text) {
+main_content_socket.on('request', function(html_text, cb) {
     mc_mng.replaceContent(html_text)
+    cb()
 });
+
+main_content_socket.on('switch_cur_step', function(step) {
+    cur_step = step 
+})
 
 //namespace 
 //js interface

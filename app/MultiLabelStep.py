@@ -2,6 +2,7 @@ from .Step import Step
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from flask import render_template, url_for
+from app import globs
 
 class MultiLabelStep(Step):
 

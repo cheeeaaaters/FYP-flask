@@ -8,7 +8,7 @@ from app.DBModels import Video, Tray
 from datetime import datetime
 import sys
 import os
-import glob
+from app import globs
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
