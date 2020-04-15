@@ -44,17 +44,23 @@ class ClassifyEatenStep(Step):
         #can be any form you feel convenient 
         for (input, info) in outputStream:
             #TODO: update the html, call js 
+            info['name'] = os.path.basename(input.path)
+            info['path'] = input.path
             info["eaten"] = (info["preds"][0].item() == 1)
+            del info["preds"]
             emit('display', info, namespace='/classify_eaten_step')
             eventlet.sleep(0)
           
             #TODO: update input using info
-            input.eaten = (info["preds"][0].item() == 1)
+            input.eaten = info["eaten"]
             db.session.commit()
 
             print("One Loop Pass")
             #It will wait on this yield statement
             yield
+
+        from app.UIManager import main_content_manager
+        main_content_manager.switch_to_step(globs.step_objects['ClassifyDishStep'])
 
     #If you wish to add something to start...
     def start(self): 

@@ -100,8 +100,4 @@
 
     })
 
-    classify_dish_socket.on('finish', function () {
-        $('#test').html("FINISH")
-    });
-
 })()
