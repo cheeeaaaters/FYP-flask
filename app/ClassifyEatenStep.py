@@ -7,10 +7,15 @@ from app.DBModels import Tray
 import sys, os
 import eventlet
 
-'''
 path_to_eaten_classifier = '/home/ubuntu/eaten'
 sys.path.insert(1, path_to_eaten_classifier)
-import eaten_main as Classifier 
+
+'''
+output = {
+        "preds": None,
+        "infer_time": 0,
+        "percentage": 0
+    }
 '''
 
 class ClassifyEatenStep(Step):
@@ -24,12 +29,13 @@ class ClassifyEatenStep(Step):
 
     def step_process(self):
         print("Start Process...")
+        import eaten_main as Classifier 
 
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.all()
-        #input_trays = query.filter_by(ocr == None)        
+        input_trays = query.filter_by(eaten=None)
+        #input_trays = query.filter_by(ocr=None)        
 
         #TODO: pass the input to classifier        
         outputStream = Classifier.process(input_trays, backref=True)
@@ -38,7 +44,8 @@ class ClassifyEatenStep(Step):
         #can be any form you feel convenient 
         for (input, info) in outputStream:
             #TODO: update the html, call js 
-            emit('display', self.convert_to_json(info), namespace='/classify_eaten_step')
+            info["eaten"] = (info["preds"][0].item() == 1)
+            emit('display', info, namespace='/classify_eaten_step')
             eventlet.sleep(0)
           
             #TODO: update input using info
@@ -49,23 +56,13 @@ class ClassifyEatenStep(Step):
             #It will wait on this yield statement
             yield
 
-        #TODO: update the html to indicate the process has finished
-        emit('finish', {}, namespace='/classify_eaten_step')
-
     #If you wish to add something to start...
     def start(self): 
-        #Add something before calling super().start()
-        #super().start()   
-        obj = {
-            'mode': 3,
-            'percentage': 0.1,
-            'path': url_for('static', filename='images/food.jpg'),
-            'locate_time': 0.1,
-            'ocr_time': 0.1,
-            'ocr_text': ['a','b','c'],
-            'ocr': "0001"
-        }
-        emit('display', obj, namespace='/classify_eaten_step')   
+        if self.started:            
+            super.start()
+        else:
+            from app.UIManager import modal_manager
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(eaten=None).count()))   
 
     #If you wish to add something to stop...
     def stop(self):
@@ -84,14 +81,8 @@ class ClassifyEatenStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/classify_eaten_step')
 
-    #TODO: convert tray to json to pass to js
-    def convert_to_json(self, input):            
-        return {
-            "eaten": (input["preds"][0].item() == 1),
-            "infer_time": input["infer_time"],
-            "percentage": input["percentage"]
-        }
-
-    @bind_socketio('/classify_eaten_step')
-    def test(self, input):
-        pass
+    @bind_socketio('/modal')
+    def modal_status(self, status):        
+        if status['step'] == "ClassifyEatenStep" and status['code'] != 0:
+            self.started = True
+            super.start()

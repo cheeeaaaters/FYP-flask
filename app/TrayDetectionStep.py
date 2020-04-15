@@ -122,15 +122,6 @@ class TrayDetectionStep(Step):
     def requested_sidebar(self):
         emit('init_sb', namespace='/tray_detection_step')
 
-    # TODO: convert tray to json to pass to js
-    def convert_to_json(self, tray):
-        return {
-            'name': os.path.basename(tray["path"]),
-            'path': tray["path"],
-            'percentage': tray["percentage"],
-            'infer_time': tray["infer_time"],
-        }
-
     def convert_video(self, video):
         path_parts=os.path.normpath(video.path).split(os.path.sep)
         name=path_parts[-1].split('.')[0]

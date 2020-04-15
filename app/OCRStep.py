@@ -131,10 +131,6 @@ class OCRStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/ocr_step')
 
-    # TODO: convert input to json to pass to js
-    def convert_to_json(self, input):
-        return {}
-
     @bind_socketio('/modal')
     def modal_status(self, status):        
         if status['step'] == "OCRStep" and status['code'] != 0:
