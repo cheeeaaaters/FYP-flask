@@ -2,7 +2,11 @@ from .Step import Step
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from flask import render_template, url_for
+import sys, os
 from app import globs
+
+path_to_multi_classifier = ''
+sys.path.insert(1, path_to_multi_classifier)
 
 class MultiLabelStep(Step):
 
@@ -10,9 +14,11 @@ class MultiLabelStep(Step):
         super().__init__()
         self.context["step_id"] = 7
         self.context["step_name"] = "multilabel_step"
+        self.coroutine = self.step_process()
 
     def step_process(self):
         print("Start Process...")
+        import multilabel_main as Classifier 
 
         #get the inputs        
         query = db.session.query(Tray)

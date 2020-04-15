@@ -31,14 +31,67 @@
 
     data_visualization_socket.on('init_mc', function () {
 
-        pieChart(data_1, "np_1", 400, 400, color)
-        pieChart(data_1, "np_3", 400, 400, color)
+        var data_visualization_tabs = {
+            introduction: $("#data_visualization_introduction_content"),
+            q1: $("#data_visualization_q1_content"),
+            q2: $("#data_visualization_q2_content"),
+            q3: $("#data_visualization_q3_content"),
+            q4: $("#data_visualization_q4_content"),
+            q5: $("#data_visualization_q5_content"),
+        }
 
-        stackBarChart(series, "np_2", margin, 800, color)
-        stackBarChart(series, "np_4", margin, 800, color)
+        $("#data_visualization_introduction").on('click', function () {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.introduction.removeClass('hidden')
+        })
 
-        scatterPlot(data_2, "p_1", 600, 600)
+        $("#data_visualization_q1").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q1.removeClass('hidden')
+            pieChart(data_1, "np_1", 400, 400, color)
+        })
 
+        $("#data_visualization_q2").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q2.removeClass('hidden')
+            stackBarChart(series, "np_2", margin, 800, color)
+        })
+
+        $("#data_visualization_q3").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q3.removeClass('hidden')
+            pieChart(data_1, "np_3", 400, 400, color)
+        })
+
+        $("#data_visualization_q4").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q4.removeClass('hidden')
+            stackBarChart(series, "np_4", margin, 800, color)
+        })
+
+        $("#data_visualization_q5").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q5.removeClass('hidden')
+            scatterPlot(data_2, "p_1", 600, 600)
+        })
+
+        for (const key in data_visualization_tabs) {
+            data_visualization_tabs[key].addClass('hidden')
+        }
+        data_visualization_tabs.introduction.removeClass('hidden')
+      
     })
 
 })()
