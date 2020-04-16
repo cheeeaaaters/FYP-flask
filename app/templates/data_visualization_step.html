@@ -17,6 +17,9 @@
     <li class="nav-item">
         <a class="nav-link" href="#" id="data_visualization_q5">Q5</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" id="data_visualization_q6">Q6</a>
+    </li>
 </ul>
 
 <div id="data_visualization_introduction_content" class="hidden intro_container">
@@ -26,31 +29,101 @@
   <p class='greybox'>
       After running all the steps, we can analyze the data about the food waste.    
   </p>      
+
+  <h2 class="space"> d3.js </h2>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/d3js.png' width=800/>
+    <figcaption><a href="https://d3js.org/">
+        source: https://d3js.org/
+    </a></figcaption>
+  </div>
+  <p class='greybox'>
+    We use d3.js for data visualization. It is a powerful framework for making interactive data 
+    visualization components very easily! Some even say it is not only a data visualization library.
+  </p>      
 </div>
 
 <div id="data_visualization_q1_content" class="hidden intro_container">
     <h1 class="qtitle">What is the average portion of food of each class?</h1>
-    <svg id="np_1"></svg>
+    <div class="pc_wrapper">
+        <div class="vertical_wrapper center_wrapper">
+            <b class='pc_title'>Without Background</b>
+            <svg id="np_1"></svg>
+        </div>
+        <div class="vertical_wrapper center_wrapper">
+            <b class='pc_title'>With Background</b>
+            <svg id="np_1_2"></svg>
+        </div>
+    </div>
 </div>
 
 <div id="data_visualization_q2_content" class="hidden intro_container">
     <h1 class="qtitle">What is the average food portion of food of each class of each restaurant?</h1>
-    <svg id="np_2"></svg>
+    <div class="hbc_wrapper">
+        <svg id="np_2"></svg>
+        <div class="hbc_title_wrapper">
+            <b class='pc_title'>Without Background</b>
+        </div>
+    </div>
+    <div class="hbc_wrapper">
+        <svg id="np_2_2"></svg>
+        <div class="hbc_title_wrapper">
+            <b class='pc_title'>With Background</b>
+        </div>
+    </div>
 </div>
 
 <div id="data_visualization_q3_content" class="hidden intro_container">
     <h1 class="qtitle">What is the average food portion of waste of each class?</h1>
-    <svg id="np_3"></svg>
+    <div class="pc_wrapper">
+        <div class="vertical_wrapper center_wrapper">
+            <b class='pc_title'>Without Background</b>
+            <svg id="np_3"></svg>
+        </div>
+        <div class="vertical_wrapper center_wrapper">
+            <b class='pc_title'>With Background</b>
+            <svg id="np_3_2"></svg>
+        </div>
+    </div>
 </div>
 
 <div id="data_visualization_q4_content" class="hidden intro_container">
     <h1 class="qtitle">What is the average food portion of waste of each class of each restaurant?</h1>
-    <svg id="np_4"></svg>
+    <div class="hbc_wrapper">
+        <svg id="np_4"></svg>
+        <div class="hbc_title_wrapper">
+            <b class='pc_title'>Without Background</b>
+        </div>
+    </div>
+    <div class="hbc_wrapper">
+        <svg id="np_4_2"></svg>
+        <div class="hbc_title_wrapper">
+            <b class='pc_title'>With Background</b>
+        </div>
+    </div>
 </div>
 
 <div id="data_visualization_q5_content" class="hidden intro_container">
     <h1 class="qtitle">How are the pairs distributed?</h1>
-    <svg id="p_1"></svg>
+    <div class="sp_wrapper">
+        <svg id="p_1"></svg>
+        <div class="donut_wrapper">
+            <div id="donut_1"></div>
+            <p class="sp_text">
+                Do you notice the slider in the sidebar? It is used to find how many
+                pairs which percentage of (food_after / food_before) is less than the slider
+                value. The above donut chart describes how many pairs are from each station
+                from the selected pairs.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="data_visualization_q6_content" class="hidden intro_container">
+    <h1 class="qtitle">What is the quantity of the food waste? (none / little / many)</h1>
+    <div class="sp_wrapper">
+        <svg id="p_2"></svg>
+    </div>
 </div>
 
 

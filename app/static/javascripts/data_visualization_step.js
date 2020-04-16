@@ -103,12 +103,95 @@ function stackBarChart(series, id, margin, width, color) {
         .call(yAxis);
 }
 
+function groupBarChart(groups, id, margin, width, color) {
+
+    var names = []
+    var len = 0;
+    var flatten = [];
+    for (let i = 0; i < groups.length; i++) {
+        for (let j = 0; j < groups[i].length; j++) {
+            names.push(groups[i][j].name)
+            len++;
+            groups[i][j].color = color[i]
+            flatten.push(groups[i][j])
+        }
+    }
+
+    var height = len * 40 + margin.top + margin.bottom
+
+    var x = d3.scaleLinear()
+        .domain([0, d3.max(groups, d => d3.max(d, dd => dd.count))])
+        .range([margin.left, width - margin.right])
+
+    var y = d3.scaleBand()
+        .domain(names)
+        .range([margin.top, height - margin.bottom])
+        .padding(0.16)
+
+    var xAxis = g => g
+        .attr("transform", `translate(0,${margin.top})`)
+        .call(d3.axisTop(x).ticks(width / 100))
+
+    var yAxis = g => g
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).tickSizeOuter(0))
+
+    const svg = d3.select("#" + id)
+        .attr("width", width)
+        .attr("height", height);
+
+    svg.selectAll("g")
+        .data(flatten)
+        .join("g")
+        .attr("transform", d => 'translate(' + x(0) + ',' + y(d.name) + ')')
+        .selectAll("rect")
+        .data(d => [d])
+        .join("rect")
+        .attr("width", d => x(d.count) - x(0))
+        .attr("height", y.bandwidth())
+        .attr("fill", d => d.color)
+
+    svg.append("g")
+        .call(xAxis);
+
+    svg.append("g")
+        .call(yAxis);
+}
+
+function vslider(selector, handler) {
+
+    var gVertical = d3.select(selector)
+        .append('svg')
+        .attr('width', 100)
+        .attr('height', 500)
+        .append('g')
+        .attr('transform', 'translate(50,20)');
+
+    var sliderVertical = d3
+        .sliderLeft()
+        .min(0)
+        .max(100)
+        .height(300)
+        .ticks(5)
+        .default(1)
+        .fill('#87a9ff')
+        .on('onchange', handler)
+
+    gVertical.call(sliderVertical);
+
+    return {
+        set_handler: h => sliderVertical.on('onchange', h)
+    }
+
+}
+
 function scatterPlot(data, id, width, height) {
 
     data.forEach(d => { d.percent = 100 * d.after / (d.before + 0.00001) })
+    var filtered_list = []
 
     var svg = d3.select("#" + id)
-        .attr("width", width * 2)
+        .attr("width", width * 1.3)
         .attr("height", height);
     margin = 40
 
@@ -132,9 +215,10 @@ function scatterPlot(data, id, width, height) {
 
     // Color scale: give me a specie name, I return a color
     var color = d3.scaleOrdinal()
-        .domain(d3.map(data, d => d.name).keys())
-        .range(d3.schemeCategory10)
-
+        .domain(["bbq", "two_choices", "delicacies", "japanese", "teppanyaki", "veggies"])
+        .range(["rgb(252,186,3)", "rgb(122,149,255)", "rgb(235,157,252)"
+                ,"rgb(255,127,122)","rgb(248,252,157)", "rgb(131,255,122)"])
+        .unknown("rgb(219,219,219)")
 
     // Highlight the specie that is hovered
     var highlight = function (d) {
@@ -197,8 +281,6 @@ function scatterPlot(data, id, width, height) {
         .on("mouseover", d => highlight({ name: d }))
         .on("mouseleave", doNotHighlight)
 
-    //console.log(a)
-
     labels.append("circle")
         .attr("r", 5)
         .attr("fill", name => color(name))
@@ -217,6 +299,8 @@ function scatterPlot(data, id, width, height) {
         .attr("x2", 100)
         .attr("y2", 0)
 
+    var filtered_list_change;
+
     var highlight_percent = function (val) {
         svg.selectAll('circle')
             .filter(d => d.percent <= val)
@@ -227,29 +311,20 @@ function scatterPlot(data, id, width, height) {
             .filter(d => d.percent > val)
             .style("fill", "lightgrey")
             .attr("r", 5)
+
+        fl = data.filter(d => d.percent <= val)
+        if(fl.length != filtered_list.length) {
+            if(filtered_list_change){
+                filtered_list_change(fl, data)
+            }
+        }
+        filtered_list = fl
     }
 
-    var sliderVertical = d3
-        .sliderLeft()
-        .min(0)
-        .max(100)
-        .height(300)
-        .ticks(5)
-        .default(1)
-        .fill('#87a9ff')
-        .on('onchange', highlight_percent)
-
-
-    var gVertical = panel
-        .append('svg')
-        .attr("x", 100)
-        .attr("y", -20)
-        .attr('width', 150)
-        .attr('height', 500)
-        .append('g')
-        .attr('transform', 'translate(140,20)');
-
-    gVertical.call(sliderVertical);
+    return {
+        highlight_percent: highlight_percent,
+        set_filtered_list_change: f => {filtered_list_change = f}
+    }
 
 }
 
@@ -342,7 +417,7 @@ function lineChart(selector, data, config) {
     const parent = d3.select(selector)
     const size = parent.node().getBoundingClientRect()
 
-    if(config) {
+    if (config) {
         size.width = config.width
         size.height = config.height
     }
@@ -414,6 +489,80 @@ function lineChart(selector, data, config) {
             }
             svg.select('.infer_time_line')
                 .attr('d', line)
+        }
+    }
+
+}
+
+function donut_chart(selector, data) {
+
+    var width = 160,
+        height = 160,
+        radius = Math.min(width, height) / 2 - 30;
+
+    var color = d3.scaleOrdinal()
+        .domain(["bbq", "two_choices", "delicacies", "japanese", "teppanyaki", "veggies"])
+        .range(["rgb(252,186,3)", "rgb(122,149,255)", "rgb(235,157,252)"
+                ,"rgb(255,127,122)","rgb(248,252,157)", "rgb(131,255,122)"])
+        .unknown("rgb(219,219,219)")
+
+    var pie = d3.pie()
+        .value(function (d) { return d.count; })        
+
+    var arc = d3.arc()
+        .innerRadius(radius - 10)
+        .outerRadius(radius);
+
+    var percent = d3.arc()
+        .outerRadius(radius + 30)
+        .innerRadius(radius);
+
+    var svg = d3.select(selector).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var path = svg.datum(data).selectAll("path")
+        .data(pie)
+        .enter().append("path")
+        .attr("fill", function (d, i) { return color(d.data.name); })
+        .attr("d", arc)
+        .each(function (d) { this._current = d; }) // store the initial angles
+               
+    var count_text = svg.datum(data).selectAll("text")
+        .data(pie)
+        .join("text")
+        .attr("transform", function (d) {            
+            return "translate(" + percent.centroid(d) + ")";
+        })
+        .text(d => d.data.count == 0 ? '' : d.data.count)
+        .attr("text-anchor", "middle")
+
+    function change() {        
+        pie.value(function (d) { return d.count; }) 
+        count_text.data(pie).attr("transform", function (d) {            
+            return "translate(" + percent.centroid(d) + ")";
+        }).text(d => d.data.count == 0 ? '' : d.data.count)
+        path = path.data(pie); // compute the new angles
+        path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
+    }
+
+    // Store the displayed angles in _current.
+    // Then, interpolate from _current to the new angles.
+    // During the transition, _current is updated in-place by d3.interpolate.
+    function arcTween(a) {
+        var i = d3.interpolate(this._current, a);
+        this._current = i(0);
+        return function (t) {
+            return arc(i(t));
+        };
+    }
+
+    return {
+        update: (d) => {
+            data = d
+            change()
         }
     }
 

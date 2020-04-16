@@ -33,7 +33,86 @@ class DataVisualizationStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/data_visualization_step')
 
+    @bind_socketio('/data_visualization_step')
+    def q1(self):
+        return [
+            { 'type': "rice", 'count': 6 },
+            { 'type': "vegetable", 'count': 2 },
+            { 'type': "meat", 'count': 4 }
+        ]
 
     @bind_socketio('/data_visualization_step')
-    def test(self, input):
-        pass
+    def q1_2(self):
+        return [
+            { 'type': "rice", 'count': 6 },
+            { 'type': "vegetable", 'count': 2 },
+            { 'type': "meat", 'count': 4 },
+            { 'type': "background", 'count': 16 }            
+        ]
+
+    @bind_socketio('/data_visualization_step')
+    def q2(self):
+        return [
+            { 'name': 'bbq', 'count': [10, 20, 40] },
+            { 'name': 'two choices', 'count': [20, 30, 50] },
+            { 'name': 'delicacies', 'count': [5, 6, 20] },
+            { 'name': 'japanese', 'count': [12, 24, 20] },
+            { 'name': 'teppanyaki', 'count': [5, 10, 20] }
+        ]   
+
+    @bind_socketio('/data_visualization_step')
+    def q2_2(self):
+        return [
+            { 'name': 'bbq', 'count': [10, 20, 40, 30] },
+            { 'name': 'two choices', 'count': [20, 30, 50, 0] },
+            { 'name': 'delicacies', 'count': [5, 6, 20, 69] },
+            { 'name': 'japanese', 'count': [12, 24, 20, 44] },
+            { 'name': 'teppanyaki', 'count': [5, 10, 20, 65] }
+        ]  
+
+    @bind_socketio('/data_visualization_step')
+    def q3(self):
+        return [
+            { 'type': "rice", 'count': 6 },
+            { 'type': "vegetable", 'count': 2 },
+            { 'type': "meat", 'count': 4 }
+        ]
+
+    @bind_socketio('/data_visualization_step')
+    def q3_2(self):
+        return [
+            { 'type': "rice", 'count': 6 },
+            { 'type': "vegetable", 'count': 2 },
+            { 'type': "meat", 'count': 4 },
+            { 'type': "background", 'count': 16 }            
+        ]
+
+    @bind_socketio('/data_visualization_step')
+    def q4(self):
+        return [
+            { 'name': 'bbq', 'count': [10, 20, 40] },
+            { 'name': 'two choices', 'count': [20, 30, 50] },
+            { 'name': 'delicacies', 'count': [5, 6, 20] },
+            { 'name': 'japanese', 'count': [12, 24, 20] },
+            { 'name': 'teppanyaki', 'count': [5, 10, 20] }
+        ]   
+
+    @bind_socketio('/data_visualization_step')
+    def q4_2(self):
+        return [
+            { 'name': 'bbq', 'count': [10, 20, 40, 30] },
+            { 'name': 'two choices', 'count': [20, 30, 50, 0] },
+            { 'name': 'delicacies', 'count': [5, 6, 20, 69] },
+            { 'name': 'japanese', 'count': [12, 24, 20, 44] },
+            { 'name': 'teppanyaki', 'count': [5, 10, 20, 65] }
+        ]  
+
+    @bind_socketio('/data_visualization_step')
+    def q5(self):
+        return [
+            { 'name': 'bbq', 'before': 16, 'after': 4 },
+            { 'name': 'bbq', 'before': 14, 'after': 5 },
+            { 'name': 'bbq', 'before': 12, 'after': 6 },
+            { 'name': 'japanese', 'before': 7, 'after': 4 },
+            { 'name': 'japanese', 'before': 1, 'after': 8 }
+        ]    

@@ -1,6 +1,8 @@
 
 function list_group(selection, data, callback){
 
+    var config = config || {}
+        
     var state = []
     for (var i=0; i<data.length; i++){
         state.push(false)
@@ -18,10 +20,10 @@ function list_group(selection, data, callback){
             callback(state, i, d)
     }
 
-    d3.select(selection)
+    d3.select(selection)        
         .selectAll('.list_group_item')
         .data(data)
-        .join('div')
+        .join('div')        
         .attr('class', 'list_group_item')
         .on('click', updateState)
         .append('span')
