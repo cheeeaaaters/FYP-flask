@@ -13,8 +13,278 @@
     </li>
 </ul>
 
-<div id="segmentation_introduction_content" class="hidden">
-    a
+<div id="segmentation_introduction_content" class="hidden intro_container">
+  <p class="title">Segmentation Step</p>
+
+  <h2 class="space"> Main Objective </h2>
+  <p class='greybox'>
+      From the collection of both uneaten and eaten tray images, we need to 
+      perform semantic segmentation to know where and what the food is. 
+  </p>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/long.png' width=800/>
+    <figcaption>example of segmentation result</figcaption>
+  </div>
+
+  <h2 class="space"> Semantic Segmentation </h2>
+  <p class="long_text">
+    Traditionally, semantic segmentation is carried out by some basic algorithms, 
+    including thresholding and clustering, which only works under specific conditions. 
+    In 2012, AlexNet made a momentous breakthrough in the precision of object recognition
+     by adopting a convolutional neural network for feature extraction. 
+     Inspired by the performance of ConvNets, Long, Shelhamer and Darrell established 
+     the first deep learning-based, pixel-wise classification method, called a fully 
+     convolutional networks (FCN). They exploited a ConvNet-based object recognizing 
+     framework like AlexNet as the backbone, with a skip architecture and deconvolution 
+     layers added to construct FCN.
+  </p>
+  <p class="greybox">
+    To recognize and locate the food from images, we tested a lot of FCN and compared their 
+    accuracy and speed.
+  </p>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/model_eval.jpg' width=800/>
+    <figcaption>comparison between models</figcaption>
+  </div>
+  <p class="greybox">
+    We have tested 30 models. The models with * means that it claims to be real-time.
+  </p>
+
+  <div class="model_table_wrapper">
+    <table id="model_table">
+      <tr>
+        <th>Network</th>
+        <th>Train (200 images)</th>
+        <th>Train_val (50 images)</th>
+        <th>Test (50 images)</th>
+        <th>Inference Time (per 50 images)</th>
+      </tr>
+      <tr>
+        <td>PSPnet-resnet152</td>
+        <td>0.96</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>6.6</td>        
+      </tr>
+      <tr>
+        <td>Global Convolutional Network(GCN)-resnet101</td>
+        <td>0.94</td>
+        <td>0.92</td>
+        <td>0.93</td>
+        <td>4.6</td>        
+      </tr>
+      <tr>
+        <td>DeepLabv3+-xception</td>
+        <td>0.88</td>
+        <td>0.88</td>
+        <td>0.88</td>
+        <td>4.6</td>        
+      </tr>
+      <tr>
+        <td>DeepLabv3-dense upsampling convolution (DUC),hybrid dilatedconvolution (HDC) -resnet101</td>
+        <td>0.82</td>
+        <td>0.82</td>
+        <td>0.80</td>
+        <td>6.7</td>        
+      </tr>
+      <tr>
+        <td>UperNet-resnet101</td>
+        <td>0.98</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>5.1</td>        
+      </tr>
+      <tr>
+        <td>HRNetv2(official)</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>6.4</td>        
+      </tr>
+      <tr>
+        <td>HRNetv2-object-contextual representation (OCR)</td>
+        <td>0.99</td>
+        <td>0.97</td>
+        <td>0.97</td>
+        <td>6.4</td>        
+      </tr>
+      <tr>
+        <td>ENet*</td>
+        <td>0.78</td>
+        <td>0.78</td>
+        <td>0.78</td>
+        <td>5</td>        
+      </tr>
+      <tr>
+        <td>FCN-8s</td>
+        <td>0.90</td>
+        <td>0.90</td>
+        <td>0.91</td>
+        <td>4.9</td>        
+      </tr>
+      <tr>
+        <td>SegNet*</td>
+        <td>0.88</td>
+        <td>0.88</td>
+        <td>0.89</td>
+        <td>4.3</td>        
+      </tr>
+      <tr>
+        <td>ICNet-resnet50*</td>
+        <td>0.96</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>4.4</td>        
+      </tr>
+      <tr>
+        <td>U-net</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>5</td>        
+      </tr>
+      <tr>
+        <td>R2U-net</td>
+        <td>0.88</td>
+        <td>0.88</td>
+        <td>0.89</td>
+        <td>7.2</td>        
+      </tr>
+      <tr>
+        <td>Attention U-net</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>5.2</td>        
+      </tr>
+      <tr>
+        <td>Integration of R2U-Net and Attention U-Net</td>
+        <td>0.88</td>
+        <td>0.88</td>
+        <td>0.89</td>
+        <td>7.4</td>        
+      </tr>
+      <tr>
+        <td>EncNet-resnet50</td>
+        <td>0.97</td>
+        <td>0.96</td>
+        <td>0.97</td>
+        <td>5.6</td>        
+      </tr>
+      <tr>
+        <td>ENCNet-resnet50+Joint Pyramid Upsampling</td>
+        <td>0.97</td>
+        <td>0.97</td>
+        <td>0.97</td>
+        <td>5.6</td>        
+      </tr>
+      <tr>
+        <td>OCNet-Atrous Spatial Pyramid(ASP)-resnet50</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>6.1</td>        
+      </tr>
+      <tr>
+        <td>DFANet*</td>
+        <td>0.87</td>
+        <td>0.87</td>
+        <td>0.87</td>
+        <td>5.7</td>        
+      </tr>
+      <tr>
+        <td>DANet-resnet50*</td>
+        <td>0.96</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>5.1</td>        
+      </tr>
+      <tr>
+        <td>DENSEASPP-densenet121</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>0.96</td>
+        <td>4.9</td>        
+      </tr>
+      <tr>
+        <td>Data-Dependent Upsampling (DUpsampling)-resnet50*</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>5.4</td>        
+      </tr>
+      <tr>
+        <td>CGNet</td>
+        <td>0.93</td>
+        <td>0.93</td>
+        <td>0.93</td>
+        <td>4.5</td>        
+      </tr>
+      <tr>
+        <td>BiSeNet-resnet18</td>
+        <td>0.94</td>
+        <td>0.93</td>
+        <td>0.94</td>
+        <td>3.6</td>        
+      </tr>
+      <tr>
+        <td>LEDNet*</td>
+        <td>0.85</td>
+        <td>0.86</td>
+        <td>0.83</td>
+        <td>4.5</td>        
+      </tr>
+      <tr>
+        <td>ESPNetV2</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>4.2</td>        
+      </tr>
+      <tr>
+        <td>MobileNetV3_large</td>
+        <td>0.89</td>
+        <td>0.86</td>
+        <td>0.86</td>
+        <td>3.8</td>        
+      </tr>
+      <tr>
+        <td>ShuffleNetV2</td>
+        <td>0.86</td>
+        <td>0.84</td>
+        <td>0.84</td>
+        <td>4</td>        
+      </tr>
+      <tr>
+        <td>ShuffleNetV2+</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>4.6</td>        
+      </tr>
+      <tr>
+        <td>EfficientNet_b3</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>0.95</td>
+        <td>4.6</td>        
+      </tr>
+    </table>
+  </div>
+
+  <h2 class="space"> Tensorrt </h2>
+  <p class='greybox'>
+    We use tensorrt to optimize the models. With TensorRT, we can optimize neural 
+    network models trained in all major frameworks, calibrate for lower precision 
+    with high accuracy. 
+  </p>
+  <div class="vertical_wrapper center_wrapper">
+    <img src='static/images/tensorrt.png' width=800/>
+    <figcaption><a href="https://developer.nvidia.com/tensorrt">
+      source: https://developer.nvidia.com/tensorrt
+  </a></figcaption> 
+  </div>
+
 </div>
 
 <div id="segmentation_seg_content" class="hidden">
