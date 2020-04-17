@@ -1,7 +1,6 @@
+var classify_dish_socket = io('/classify_dish_step');
 
 (function () {
-
-    var classify_dish_socket = io('/classify_dish_step');
 
     var classify_dish_progess_bar;
     var classify_dish_infer_time_chart;

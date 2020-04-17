@@ -84,8 +84,8 @@ class SegmentationStep(Step):
     def select_model(self, model):
         pass
 
-    @bind_socketio('/modal')
+    @bind_socketio('/segmentation_step')
     def modal_status(self, status):        
-        if status['step'] == "SegmentationStep" and status['code'] != 0:
+        if status['code'] != 0:
             self.started = True
             super.start()

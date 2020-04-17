@@ -1,7 +1,6 @@
+var multilabel_socket = io('/multilabel_step');
 
 (function () {
-
-    var multilabel_socket = io('/multilabel_step');
 
     var multilabel_progess_bar;
     var multilabel_infer_time_chart;

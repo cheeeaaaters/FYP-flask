@@ -90,8 +90,8 @@ class ClassifyDishStep(Step):
     def requested_sidebar(self):    
         emit('init_sb', namespace='/classify_dish_step')
 
-    @bind_socketio('/modal')
+    @bind_socketio('/classify_dish_step')
     def modal_status(self, status):        
-        if status['step'] == "ClassifyDishStep" and status['code'] != 0:
+        if status['code'] != 0:
             self.started = True
             super.start()

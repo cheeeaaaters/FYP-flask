@@ -1,6 +1,6 @@
-(function () {
+var pair_socket = io('/pair_step');
 
-    var pair_socket = io('/pair_step');
+(function () {
 
     var pair_list_group;
     var lg_data = [

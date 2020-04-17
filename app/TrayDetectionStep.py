@@ -155,9 +155,12 @@ class TrayDetectionStep(Step):
 
         return (area, date_start, date_end)
 
-    @bind_socketio('/modal')
-    def modal_status(self, status):        
-        if status['step'] == "TrayDetectionStep" and status['code'] != 0:
+    @bind_socketio('/tray_detection_step')
+    def modal_status(self, status):
+        print("?????")
+        for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
+            print(files)        
+        if status['code'] != 0:
             self.started = True
             super.start()
             

@@ -1,7 +1,6 @@
+var segmentation_socket = io('/segmentation_step');
 
-(function() {
-
-    var segmentation_socket = io('/segmentation_step');
+(function() {    
     
     var segmentation_progess_bar;
     var segmentation_infer_time_chart;

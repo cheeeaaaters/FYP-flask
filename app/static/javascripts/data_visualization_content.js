@@ -1,3 +1,5 @@
+var data_visualization_socket = io('/data_visualization_step');
+
 (function () {
 
     var color = ['#ff5959', '#8fff87', '#87a9ff', '#444444']
@@ -49,6 +51,7 @@
     ]
 
     var vs, sp, dc;
+    var flag = false;
     var dv_list_group;
     var lg_data = [
         'All',
@@ -56,9 +59,7 @@
         'Vegetable',
         'Meat'
     ]
-
-    var data_visualization_socket = io('/data_visualization_step');
-
+  
     data_visualization_socket.on('init_sb', function () {
 
         vs = vslider("#sp_slider")
@@ -70,6 +71,8 @@
     })
 
     data_visualization_socket.on('init_mc', function () {
+
+        flag = true;
 
         var data_visualization_tabs = {
             introduction: $("#data_visualization_introduction_content"),
@@ -169,9 +172,9 @@
             }
             data_visualization_sb.q5.removeClass('hidden')
             data_visualization_socket.emit('q5', (data) => {
-                if(!sp)
+                if(!sp || flag)
                     sp = scatterPlot(data, "p_1", 600, 600) 
-                if(!dc)      
+                if(!dc || flag)      
                     dc = donut_chart("#donut_1", data_3)
                 sp.set_filtered_list_change((fl) => {
                     data_3.forEach(d => d.count = 0)
@@ -181,11 +184,11 @@
                                 dd.count += 1
                             }
                         })
-                    })
-                    console.log(data_3)
+                    })                    
                     dc.update(data_3)
                 })         
-                vs.set_handler(sp.highlight_percent)                
+                vs.set_handler(sp.highlight_percent)       
+                flag = false        
             })               
         })
 

@@ -183,8 +183,8 @@ class PairStep(Step):
     def change_state(self, state):
         self.state = state
 
-    @bind_socketio('/modal')
+    @bind_socketio('/pair_step')
     def modal_status(self, status):        
-        if status['step'] == "PairStep" and status['code'] != 0:
+        if status['code'] != 0:
             self.started = True
             self.start()

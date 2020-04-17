@@ -132,9 +132,9 @@ class OCRStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/ocr_step')
 
-    @bind_socketio('/modal')
-    def modal_status(self, status):        
-        if status['step'] == "OCRStep" and status['code'] != 0:
+    @bind_socketio('/ocr_step')
+    def modal_status(self, status):  
+        if status['code'] != 0:
             self.started = True
             super.start()
             
