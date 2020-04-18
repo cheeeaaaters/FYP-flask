@@ -1,6 +1,9 @@
 from app import globs
 from app import socketio
 from flask_socketio import emit
+from flask import render_template, url_for
+from app import db
+from app.DBModels import *
 
 #Python interface of main content for js
 class SidebarManager():
@@ -126,6 +129,23 @@ def request_success():
     globs.cur_step.requested()
 ##########################################################
 
+#Python interface of modal for js
+class ModalManager():
+
+    def __init__(self):
+        pass
+    
+    def show(self, template):
+        emit('show', template, namespace='/modal')
+
+    def hide(self):
+        emit('hide', namespace='/modal')
+
+##########################################################
+modal_manager = ModalManager()
+
+##########################################################
+
 #Python interface of nav nuttons for js
 class NavButtonManager():
 
@@ -142,7 +162,10 @@ class NavButtonManager():
         cur = globs.cur_step
         if cur != None and cur.running:
             cur.running = False
-            cur.stop()            
+            cur.stop()        
+
+    def trash_button_handler(self): 
+        modal_manager.show(render_template('trash_modal.html'))    
 
 ##########################################################
 nav_button_manager = NavButtonManager()
@@ -154,19 +177,20 @@ def start_button_handler():
 @socketio.on('pause_button', namespace='/nav_button')
 def pause_button_handler():
     nav_button_manager.pause_button_handler()
+
+@socketio.on('trash_button', namespace='/nav_button')
+def trash_button_handler():
+    nav_button_manager.trash_button_handler()
+
+@socketio.on('trash_modal_status', namespace='/nav_button')
+def trash_modal_status(status):
+    if status['code'] != 0:
+        Video.query.delete()
+        Tray.query.delete()
+        Pair.query.delete()
+        SegmentationInfo.query.delete()
+        db.session.commit()
+        
 ##########################################################
 
-#Python interface of modal for js
-class ModalManager():
 
-    def __init__(self):
-        pass
-    
-    def show(self, template):
-        emit('show', template, namespace='/modal')
-
-    def hide(self):
-        emit('hide', namespace='/modal')
-
-##########################################################
-modal_manager = ModalManager()

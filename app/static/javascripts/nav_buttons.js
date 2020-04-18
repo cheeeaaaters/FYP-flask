@@ -7,3 +7,7 @@ $("#start_button").on('click', function() {
 $("#pause_button").on('click', function() {
     nav_button_socket.emit('pause_button')
 });
+
+$("#trash_button").on('click', function() {
+    nav_button_socket.emit('trash_button')
+});

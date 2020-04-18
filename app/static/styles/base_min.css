@@ -66,6 +66,16 @@ nav img {
   margin-left: 49px;
 }
 
+#trash_button {
+  margin-left: 55px;
+  margin-top: 5px;
+}
+
+#trash_button img {
+  width: 40px;
+  height: 40px; 
+}
+
 .modal {
   display: none; 
   position: fixed; 

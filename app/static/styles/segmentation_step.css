@@ -38,21 +38,21 @@
     justify-content: center;
 }
 
-#model_table {
+.model_table {
     margin: 30px 20px;
     width: 100%
 }
 
-#model_table tr :first-child{
+.model_table tr :first-child{
     font-weight: bold;
     width: 300px;
 }
 
-#model_table th+th{
+.model_table th+th{
     width: 150px
 }
 
-#model_table th, td {
+.model_table th, td {
     padding: 15px;
     text-align: center;
 }

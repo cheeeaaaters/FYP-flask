@@ -22,7 +22,7 @@
       perform semantic segmentation to know where and what the food is. 
   </p>
   <div class="vertical_wrapper center_wrapper">
-    <img src='static/images/long.png' width=800/>
+    <img src='static/images/seg_pred.png' width=800/>
     <figcaption>example of segmentation result</figcaption>
   </div>
 
@@ -51,7 +51,7 @@
   </p>
 
   <div class="model_table_wrapper">
-    <table id="model_table">
+    <table class="model_table">
       <tr>
         <th>Network</th>
         <th>Train (200 images)</th>
@@ -272,7 +272,109 @@
     </table>
   </div>
 
-  <h2 class="space"> Tensorrt </h2>
+  <h2 class="space"> Loss </h2>
+  <p class='greybox'>
+    We try different loss functions to further improve the accuracy. The model we use to 
+    test the loss functions is <b>HRNetv2_OCR</b>. For each loss function, we run for 150 epochs
+    on the test split.
+  </p>
+  <div class="model_table_wrapper">
+    <table class="model_table">
+      <tr>
+        <th>Loss Type</th>
+        <th>background</th>
+        <th>meat</th>
+        <th>rice</th>
+        <th>vegetable</th>
+      </tr>
+      <tr>
+        <td>Cross-Entropy Loss</td>
+        <td>0.990</td>
+        <td>0.915</td>
+        <td>0.591</td>
+        <td>0.781</td>
+      </tr>
+      <tr>
+        <td>Weighted-Cross-Entropy Loss</td>
+        <td>0.983</td>
+        <td>0.932</td>
+        <td>0.699</td>
+        <td>0.856</td>
+      </tr>
+      <tr>
+        <td>Dice Loss</td>
+        <td>0.987</td>
+        <td>0.941</td>
+        <td>0.626</td>
+        <td>0.782</td>
+      </tr>
+      <tr>
+        <td>Focal Loss</td>
+        <td>0.991</td>
+        <td>0.888</td>
+        <td>0.574</td>
+        <td>0.757</td>
+      </tr>
+      <tr>
+        <td>CE_Dice Loss</td>
+        <td>0.990</td>
+        <td>0.923</td>
+        <td>0.605</td>
+        <td>0.806</td>
+      </tr>
+      <tr>
+        <td>Lovasz-Softmax Loss</td>
+        <td>0.990</td>
+        <td>0.916</td>
+        <td>0.625</td>
+        <td>0.828</td>
+      </tr>
+      <tr>
+        <td>Generalized Dice Loss</td>
+        <td>0.959</td>
+        <td>0.960</td>
+        <td>0.511</td>
+        <td>0.835</td>
+      </tr>
+      <tr>
+        <td>GDL tden Fine-Tune witd Boundary Loss</td>
+        <td>0.990</td>
+        <td>0.398</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td>Boundary Loss witd GDL (4x slower tden training witd CE)</td>
+        <td>0.991</td>
+        <td>0.911</td>
+        <td>0.580</td>
+        <td>0.824</td>
+      </tr>
+      <tr>
+        <td>Focal Loss witd GDL</td>
+        <td>0.990</td>
+        <td>0.914</td>
+        <td>0.594</td>
+        <td>0.800</td>
+      </tr>
+      <tr>
+        <td>OHEM CE Loss</td>
+        <td>0.989</td>
+        <td>0.919</td>
+        <td>0.644</td>
+        <td>0.817</td>
+      </tr>
+      <tr>
+        <td>OHEM WCE Loss</td>
+        <td>0.984</td>
+        <td>0.933</td>
+        <td>0.665</td>
+        <td>0.861</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2 class="space"> TensorRT </h2>
   <p class='greybox'>
     We use tensorrt to optimize the models. With TensorRT, we can optimize neural 
     network models trained in all major frameworks, calibrate for lower precision 
@@ -284,6 +386,9 @@
       source: https://developer.nvidia.com/tensorrt
   </a></figcaption> 
   </div>
+  <p class='greybox'>
+    We tested TensorRT on HRNet. The accuracy is the same but the inference time is decreased by 30%!
+  </p>
 
 </div>
 
