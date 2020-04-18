@@ -12,6 +12,7 @@ from app import globs
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
+#import object_tracker_4 as Yolo
 
 '''
     output = {
@@ -38,8 +39,7 @@ class TrayDetectionStep(Step):
 
     def step_process(self):
         print("Start Process...")
-        import object_tracker_4 as Yolo
-
+        
         # get the inputs
         # TODO: Optionally can make video also an input stream
         videos = Video.query.all()
@@ -81,7 +81,7 @@ class TrayDetectionStep(Step):
                         'date_time': date_start+delta*tray["percentage"]
                     }
                     
-                    same_tray = Tray.query.filter_by(path=new_tray.path).first()
+                    same_tray = Tray.query.filter_by(path=info_dict['path']).first()
                     if not same_tray:
                         new_tray = Tray(**info_dict)
                         db.session.add(new_tray)
@@ -94,12 +94,12 @@ class TrayDetectionStep(Step):
                 # It will wait on this yield statement
                 yield
         from app.UIManager import main_content_manager
-        main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
+        #main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
 
     # If you wish to add something to start...
     def start(self):
         if self.started:            
-            super.start()
+            super().start()
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', num=Video.query.count()))           
@@ -156,11 +156,15 @@ class TrayDetectionStep(Step):
         return (area, date_start, date_end)
 
     @bind_socketio('/tray_detection_step')
-    def modal_status(self, status):
-        print("?????")
-        for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
-            print(files)        
+    def modal_status(self, status):   
         if status['code'] != 0:
+            for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
+                for f in files:
+                    if Video.query.filter_by(path = os.path.join(r, f)).first() == None:
+                        print("Loaded video: " + os.path.join(r, f))
+                        v = Video(path = os.path.join(r, f))
+                        db.session.add(v)
+                        db.session.commit() 
             self.started = True
-            super.start()
+            self.start()
             
