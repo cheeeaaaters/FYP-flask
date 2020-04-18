@@ -90,6 +90,9 @@ class TrayDetectionStep(Step):
                     
                     db.session.commit()
                     print("One Loop Pass")
+                
+                else:
+                    emit('display', tray, namespace='/tray_detection_step')
 
                 # It will wait on this yield statement
                 yield
@@ -101,8 +104,12 @@ class TrayDetectionStep(Step):
         if self.started:            
             super().start()
         else:
+            count = 0
+            for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
+                for f in files:
+                    count += 1
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=Video.query.count()))           
+            modal_manager.show(render_template('step_modal.html', num=count))           
             
 
     # If you wish to add something to stop...

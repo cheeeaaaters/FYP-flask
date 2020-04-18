@@ -9,8 +9,10 @@ var tray_detection_socket = io('/tray_detection_step');
 
     tray_detection_socket.on('display', function (tray) {
         tray_detection_progess_bar.update(tray.percentage * 100)
-        tray_gallery.append(tray)
-        tray_infer_time_chart.add({ x: i, y: tray.infer_time })
+        if (tray.path) {
+            tray_gallery.append(tray)
+            tray_infer_time_chart.add({ x: i, y: tray.infer_time })
+        }
         i += 1;
     });
 
@@ -92,6 +94,8 @@ var tray_detection_socket = io('/tray_detection_step');
             tray_detection_tabs[key].addClass('hidden')
         }
         tray_detection_tabs.introduction.removeClass('hidden')
+
+        i = 1;
 
     })
 
