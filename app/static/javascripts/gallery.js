@@ -7,14 +7,20 @@ function gallery(selection, tray_detection_data, config) {
     var mh = config.mh || 15
     var mv = config.mv || 10
     var max_size = config.max_size || 20
+    var load_more = (config.load_more === undefined) ? false : config.load_more
+    var load_more_size = config.load_more_size || max_size
     var absolute_path = (config.absolute_path === undefined) ? true : config.absolute_path
     //var absolute_path = false
     var path_prefix = absolute_path ? '/my_images/' : ''
     var description;
     var onClick;
 
-    d3.select(selection)
+    var vwrapper = d3.select(selection)
         .append("div")
+        .attr('class', 'vertical_wrapper center_wrapper')
+        .attr('width', '100%')
+
+    vwrapper.append("div")
         .attr("class", "gallery")
         .style("width", (image_width + mh * 2) * row_size + "px")
 
@@ -47,6 +53,23 @@ function gallery(selection, tray_detection_data, config) {
 
     update_gallery(tray_detection_data)
 
+    if(load_more){
+        var container = vwrapper
+        .append("div")
+        .attr("class", "load_more_button_container")
+
+        container.append("a")        
+        .on('click', () => {
+            max_size += load_more_size
+            data = tray_detection_data.slice(0, max_size)
+            update_gallery(data)
+        })
+        .append("img")
+        .attr("src", 'static/icons/three-dots.svg')
+        .attr("width", "40px")
+        .style("cursor", "pointer")
+    }
+
     return {
         append: function (path) {
             tray_detection_data.unshift(path)
@@ -60,6 +83,11 @@ function gallery(selection, tray_detection_data, config) {
         set_on_click: function (f) {
             onClick = f
             update_gallery(tray_detection_data)
+        },
+        extend: function (m) {
+            max_size = m
+            data = tray_detection_data.slice(0, max_size)
+            update_gallery(data)
         }
     }
 
@@ -74,18 +102,24 @@ function multilabel_gallery(selection, tray_detection_data, config) {
     var mh = config.mh || 50
     var mv = config.mv || 10
     var max_size = config.max_size || 9
+    var load_more = (config.load_more === undefined) ? false : config.load_more
+    var load_more_size = config.load_more_size || max_size
     var absolute_path = (config.absolute_path === undefined) ? true : config.absolute_path
     var path_prefix = absolute_path ? '/my_images/' : ''
     var rect_width = image_width * 0.2
     var rect_height = rect_width * 0.4
     var cls = ["tag_rice", "tag_vegetable", "tag_meat"]
 
-    d3.select(selection)
+    var vwrapper = d3.select(selection)
         .append("div")
+        .attr('class', 'vertical_wrapper center_wrapper')
+        .attr('width', '100%')
+
+    vwrapper.append("div")
         .attr("class", "gallery")
         .style("width", (image_width * 2 + mh * 2 + pair_mh) * row_size + "px")
 
-    function draw_tag(svg, label) {
+    function draw_tag(svg) {
         var tag_y = 10
         var before_tag_x = (image_width - rect_width * 3) / 2
         var after_tag_x = image_width + pair_mh + before_tag_x
@@ -161,6 +195,23 @@ function multilabel_gallery(selection, tray_detection_data, config) {
     }
 
     update_gallery(tray_detection_data)
+
+    if(load_more){
+        var container = vwrapper
+        .append("div")
+        .attr("class", "load_more_button_container")
+
+        container.append("a")        
+        .on('click', () => {
+            max_size += load_more_size
+            data = tray_detection_data.slice(0, max_size)
+            update_gallery(data)
+        })
+        .append("img")
+        .attr("src", 'static/icons/three-dots.svg')
+        .attr("width", "40px")
+        .style("cursor", "pointer")
+    }
 
     return {
         append: function (path) {

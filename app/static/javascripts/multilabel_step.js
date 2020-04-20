@@ -48,7 +48,10 @@ var multilabel_socket = io('/multilabel_step');
             multilabel_tabs.infer_time.removeClass('hidden')
         })
 
-        pair_gallery = multilabel_gallery("#multilabel_classifier_content", [], {absolute_path: false})        
+        pair_gallery = multilabel_gallery("#multilabel_classifier_content", [], {
+            absolute_path: false,
+            load_more: true
+        })        
 
         multilabel_infer_time_chart = lineChart('#multilabel_infer_time_graph', [], { width: 1000, height: 300 })
 

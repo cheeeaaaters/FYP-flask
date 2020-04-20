@@ -12,7 +12,7 @@ from app import globs
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-#import object_tracker_4 as Yolo
+# import object_tracker_4 as Yolo
 
 '''
     output = {
@@ -28,6 +28,7 @@ sys.path.insert(1, path_to_yolo)
     }
 '''
 
+
 class TrayDetectionStep(Step):
 
     def __init__(self):
@@ -35,11 +36,20 @@ class TrayDetectionStep(Step):
         self.context["step_id"] = 0
         self.context["step_name"] = "tray_detection_step"
         self.coroutine = self.step_process()
+        self.limit = 3
         print("Tray Detection Step Created!")
 
     def step_process(self):
         print("Start Process...")
-        
+
+        def limit_buffer(buf):
+            if len(buf) < self.limit:
+                return buf
+            step = (len(buf) - 1) / (self.limit - 1)
+            b = []
+            for i in range(self.limit):
+                b.append(buf[int(i*step)])
+
         # get the inputs
         # TODO: Optionally can make video also an input stream
         videos = Video.query.all()
@@ -53,9 +63,35 @@ class TrayDetectionStep(Step):
             (area, date_start, date_end) = self.convert_video(video)
             delta = date_end - date_start
 
+            buffer = []
+            obj_id = -1
+
             # yolov3 returns:
             # can be any form you feel convenient
             for tray in outputStream:
+
+                if obj_id != -1 and tray["obj_id"] != obj_id:
+                    for t in limit_buffer(buffer):
+                        # TODO: insert to database
+                        info_dict = {
+                            'path': tray["path"],
+                            'object_id': tray["obj_id"],
+                            'video': video,
+                            'area': area,
+                            'date_time': date_start+delta*tray["percentage"]
+                        }
+
+                        same_tray = Tray.query.filter_by(
+                            path=info_dict['path']).first()
+                        if not same_tray:
+                            new_tray = Tray(**info_dict)
+                            db.session.add(new_tray)
+                        else:
+                            same_tray.update(info_dict)
+
+                    db.session.commit()
+                    buffer = []
+                    obj_id = tray["obj_id"]
 
                 if tray["path"] != None:
 
@@ -65,42 +101,56 @@ class TrayDetectionStep(Step):
                     tray['date_time'] = (
                         date_start+delta*tray["percentage"]).strftime("%d-%b-%Y (%H:%M:%S.%f)")
 
+                    buffer.append(tray)
+                    obj_id = tray["obj_id"]
+
                     # TODO: update the html, call js
                     emit('display', tray, namespace='/tray_detection_step')
                     # Optional: attach a callback when client receives my signal
                     # emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
                     # Example use case: when client internet dies, we may want to stop the process.
 
-                    # Optional: this code could be inside the callback
-                    # TODO: insert to database
-                    info_dict = {
-                        'path': tray["path"],
-                        'object_id': tray["obj_id"],
-                        'video': video,
-                        'area': area,
-                        'date_time': date_start+delta*tray["percentage"]
-                    }
-                    
-                    same_tray = Tray.query.filter_by(path=info_dict['path']).first()
-                    if not same_tray:
-                        new_tray = Tray(**info_dict)
-                        db.session.add(new_tray)
-                    else:
-                        same_tray.update(info_dict)
-                    
-                    db.session.commit()
                     print("One Loop Pass")
-                
+
                 else:
                     emit('display', tray, namespace='/tray_detection_step')
 
                 # It will wait on this yield statement
                 yield
-        from app.UIManager import main_content_manager
-        #main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
+
+            for t in limit_buffer(buffer):
+                # TODO: insert to database
+                info_dict = {
+                    'path': tray["path"],
+                    'object_id': tray["obj_id"],
+                    'video': video,
+                    'area': area,
+                    'date_time': date_start+delta*tray["percentage"]
+                }
+
+                same_tray = Tray.query.filter_by(path=info_dict['path']).first()
+                if not same_tray:
+                    new_tray = Tray(**info_dict)
+                    db.session.add(new_tray)
+                else:
+                    same_tray.update(info_dict)
+
+            db.session.commit()
+                    
+        #from app.UIManager import main_content_manager
+        # main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
 
     # If you wish to add something to start...
     def start(self):
+        for i in range(60):
+            obj = {
+                'path': 'static/images/food.jpg',
+                'percentage': 0.1,
+                'name': i,
+                'infer_time': 0.1
+            }
+            emit('display', obj, namespace='/tray_detection_step')
+        '''
         if self.started:            
             super().start()
         else:
@@ -109,7 +159,8 @@ class TrayDetectionStep(Step):
                 for f in files:
                     count += 1
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=count))           
+            modal_manager.show(render_template('step_modal.html', num=count))   
+        '''        
             
 
     # If you wish to add something to stop...

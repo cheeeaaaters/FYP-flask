@@ -15,3 +15,9 @@
     stroke-width: 1px;
     stroke: black;
 }
+
+.load_more_button_container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}

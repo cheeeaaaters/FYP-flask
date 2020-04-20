@@ -57,7 +57,10 @@ var tray_detection_socket = io('/tray_detection_step');
             tray_detection_tabs.infer_time.removeClass('hidden')
         })
 
-        tray_gallery = gallery("#tray_detection_gallery_content", [], { absolute_path: true })
+        tray_gallery = gallery("#tray_detection_gallery_content", [], { 
+            absolute_path: false,
+            load_more: true
+        })
         tray_gallery.set_description(wrappers => {
             wrappers.selectAll("text")
                 .data(d => [d.name])
