@@ -167,6 +167,9 @@ class NavButtonManager():
     def trash_button_handler(self): 
         modal_manager.show(render_template('trash_modal.html'))    
 
+    def hammer_button_handler(self): 
+        modal_manager.show(render_template('hammer_modal.html')) 
+
 ##########################################################
 nav_button_manager = NavButtonManager()
 
@@ -190,6 +193,17 @@ def trash_modal_status(status):
         Pair.query.delete()
         SegmentationInfo.query.delete()
         db.session.commit()
+
+@socketio.on('hammer_button', namespace='/nav_button')
+def hammer_button_handler():
+    nav_button_manager.hammer_button_handler()
+
+@socketio.on('hammer_modal_status', namespace='/nav_button')
+def hammer_modal_status(status):
+    if status['code'] != 0:
+        step_obj = globs.step_objects[status['step']]
+        if step_obj != None:
+            step_obj.clean_up()
         
 ##########################################################
 

@@ -8,6 +8,7 @@ import sys
 import os
 from app import globs
 import eventlet
+import shutil
 
 '''
 import count as Polling
@@ -132,9 +133,19 @@ class OCRStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/ocr_step')
 
+    def clean_up(self):
+        four_angles_path = os.path.join(path_to_yolo, "four_angles")
+        ocr_text_path = os.path.join(path_to_yolo, "OCR_text")             
+        try:
+            shutil.rmtree(four_angles_path)
+            shutil.rmtree(ocr_text_path)
+        except OSError as e:
+            print("Error removing directory")
+
     @bind_socketio('/ocr_step')
     def modal_status(self, status):  
         if status['code'] != 0:
             self.started = True
             self.start()
+
             

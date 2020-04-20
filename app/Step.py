@@ -51,6 +51,9 @@ class Step():
 
     def requested_sidebar(self):
         pass
+
+    def clean_up(self):
+        pass
     
     #Examples for how to use bind_socketio
     #binds the decorated function to THE global object of this step

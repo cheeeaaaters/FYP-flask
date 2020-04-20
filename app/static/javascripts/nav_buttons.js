@@ -11,3 +11,7 @@ $("#pause_button").on('click', function() {
 $("#trash_button").on('click', function() {
     nav_button_socket.emit('trash_button')
 });
+
+$("#hammer_button").on('click', function() {
+    nav_button_socket.emit('hammer_button')
+});

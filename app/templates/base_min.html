@@ -77,6 +77,8 @@
         src="{{url_for('static', filename='javascripts/step_modal.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/trash_modal.js')}}"></script>
+<script type="text/javascript"
+        src="{{url_for('static', filename='javascripts/hammer_modal.js')}}"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -90,7 +92,10 @@
     </a>
     <a href="#" id="trash_button">
         <img src="{{url_for('static', filename='icons/trash.svg')}}"/>    
-    </a>    
+    </a>   
+    <a href="#" id="hammer_button">
+        <img src="{{url_for('static', filename='icons/hammer.svg')}}"/>    
+    </a>  
 </nav>
 {% endblock %}
 
