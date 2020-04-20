@@ -196,3 +196,6 @@ class TrayDetectionStep(Step):
             self.started = True
             self.start()
             
+    @bind_socketio('/tray_detection_step')
+    def change_limit(self, val):        
+        self.limit = val

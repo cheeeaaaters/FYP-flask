@@ -19,6 +19,13 @@ var tray_detection_socket = io('/tray_detection_step');
     tray_detection_socket.on('init_sb', function () {
         tray_detection_progess_bar = radialProgress('.process_percentage')
         tray_detection_progess_bar.update(0)
+        
+        var tdsocket = io('/tray_detection_step')
+        var slider = $("#tray_limit")[0]        
+        slider.oninput = function() {            
+            $("#tray_limit_text").text(this.value)
+            tdsocket.emit('change_limit', this.value)
+        }
     })
 
     tray_detection_socket.on('init_mc', function () {
