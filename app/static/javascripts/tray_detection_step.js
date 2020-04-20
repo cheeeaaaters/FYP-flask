@@ -58,8 +58,10 @@ var tray_detection_socket = io('/tray_detection_step');
         })
 
         tray_gallery = gallery("#tray_detection_gallery_content", [], { 
-            absolute_path: false,
-            load_more: true
+            absolute_path: true,
+            load_more: true,
+            row_size: 7,
+            max_size: 28
         })
         tray_gallery.set_description(wrappers => {
             wrappers.selectAll("text")

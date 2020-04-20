@@ -84,7 +84,16 @@ def process(videos, back_ref=False):
         subdir, filename = os.path.split(video.path)
         outputpath = os.path.join(root ,'data/output/', filename)
         vid = cv2.VideoCapture(video.path)
-        total_num_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        vidCopy = cv2.VideoCapture(video.path)
+        total_num_frames = 0
+        while(True):
+            ret, f = vidCopy.read()
+            if not ret:
+                break
+            else:
+                total_num_frames += 1
+        total_num_frames -= 1
+        #total_num_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         mot_tracker = Sort(max_age=3,min_hits=0) 
 
         ret,frame=vid.read()
@@ -101,6 +110,7 @@ def process(videos, back_ref=False):
             if not ret:
                 break
             frames += 1
+            print(frames)
             output["percentage"] = frames/total_num_frames
             output["path"] = None
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -137,6 +147,7 @@ def process(videos, back_ref=False):
                                 count += 1
                                 output["path"] = write_path
                                 output["count"] = count
+                                print("==================================================" , count, frames, total_num_frames)
                             except:
                                 print("Exception in object tracker")
 

@@ -9,10 +9,11 @@ from datetime import datetime
 import sys
 import os
 from app import globs
+from collections import defaultdict
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-# import object_tracker_4 as Yolo
+#import object_tracker_4 as Yolo
 
 '''
     output = {
@@ -28,7 +29,6 @@ sys.path.insert(1, path_to_yolo)
     }
 '''
 
-
 class TrayDetectionStep(Step):
 
     def __init__(self):
@@ -43,13 +43,14 @@ class TrayDetectionStep(Step):
         print("Start Process...")
 
         def limit_buffer(buf):
-            if len(buf) < self.limit:
-                return buf
-            step = (len(buf) - 1) / (self.limit - 1)
-            b = []
-            for i in range(self.limit):
-                b.append(buf[int(i*step)])
-
+            for obj_id in buf:
+                if len(buf[obj_id]) > self.limit:                    
+                    step = (len(buf[obj_id]) - 1) / (self.limit - 1)
+                    b = []
+                    for i in range(self.limit):
+                        b.append(buf[obj_id][int(i*step)])
+                    buf[obj_id] = b
+                    
         # get the inputs
         # TODO: Optionally can make video also an input stream
         videos = Video.query.all()
@@ -63,35 +64,11 @@ class TrayDetectionStep(Step):
             (area, date_start, date_end) = self.convert_video(video)
             delta = date_end - date_start
 
-            buffer = []
-            obj_id = -1
+            buffer = defaultdict(lambda: [])
 
             # yolov3 returns:
             # can be any form you feel convenient
-            for tray in outputStream:
-
-                if obj_id != -1 and tray["obj_id"] != obj_id:
-                    for t in limit_buffer(buffer):
-                        # TODO: insert to database
-                        info_dict = {
-                            'path': tray["path"],
-                            'object_id': tray["obj_id"],
-                            'video': video,
-                            'area': area,
-                            'date_time': date_start+delta*tray["percentage"]
-                        }
-
-                        same_tray = Tray.query.filter_by(
-                            path=info_dict['path']).first()
-                        if not same_tray:
-                            new_tray = Tray(**info_dict)
-                            db.session.add(new_tray)
-                        else:
-                            same_tray.update(info_dict)
-
-                    db.session.commit()
-                    buffer = []
-                    obj_id = tray["obj_id"]
+            for tray in outputStream:                
 
                 if tray["path"] != None:
 
@@ -101,9 +78,16 @@ class TrayDetectionStep(Step):
                     tray['date_time'] = (
                         date_start+delta*tray["percentage"]).strftime("%d-%b-%Y (%H:%M:%S.%f)")
 
-                    buffer.append(tray)
-                    obj_id = tray["obj_id"]
-
+                    info_dict = {
+                        'path': tray["path"],
+                        'object_id': tray["obj_id"],
+                        'video': video,
+                        'area': area,
+                        'date_time': date_start+delta*tray["percentage"]
+                    }
+                    buffer[tray["obj_id"]].append(info_dict)
+                    #print(tray["obj_id"], buffer[tray["obj_id"]])
+                    
                     # TODO: update the html, call js
                     emit('display', tray, namespace='/tray_detection_step')
                     # Optional: attach a callback when client receives my signal
@@ -117,23 +101,20 @@ class TrayDetectionStep(Step):
 
                 # It will wait on this yield statement
                 yield
-
-            for t in limit_buffer(buffer):
-                # TODO: insert to database
-                info_dict = {
-                    'path': tray["path"],
-                    'object_id': tray["obj_id"],
-                    'video': video,
-                    'area': area,
-                    'date_time': date_start+delta*tray["percentage"]
-                }
-
-                same_tray = Tray.query.filter_by(path=info_dict['path']).first()
-                if not same_tray:
-                    new_tray = Tray(**info_dict)
-                    db.session.add(new_tray)
-                else:
-                    same_tray.update(info_dict)
+            
+            
+            limit_buffer(buffer)
+            for t in buffer:
+                for info_dict in buffer[t]:
+                    # TODO: insert to database
+                    same_tray = Tray.query.filter_by(path=info_dict['path'])
+                    if not same_tray.first():
+                        new_tray = Tray(**info_dict)
+                        db.session.add(new_tray)
+                    else:
+                        del info_dict['video']
+                        same_tray.update(info_dict)
+                        same_tray.video = video
 
             db.session.commit()
                     
@@ -141,16 +122,7 @@ class TrayDetectionStep(Step):
         # main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
 
     # If you wish to add something to start...
-    def start(self):
-        for i in range(60):
-            obj = {
-                'path': 'static/images/food.jpg',
-                'percentage': 0.1,
-                'name': i,
-                'infer_time': 0.1
-            }
-            emit('display', obj, namespace='/tray_detection_step')
-        '''
+    def start(self):        
         if self.started:            
             super().start()
         else:
@@ -160,9 +132,7 @@ class TrayDetectionStep(Step):
                     count += 1
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', num=count))   
-        '''        
-            
-
+     
     # If you wish to add something to stop...
     def stop(self):
         # Add something before calling super().stop()

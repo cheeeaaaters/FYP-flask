@@ -110,7 +110,7 @@ class OCRStep(Step):
 
     def start(self):        
         if self.started:            
-            super.start()
+            super().start()
         else:
             from app.UIManager import modal_manager            
             modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(ocr=None).count()))   
@@ -136,5 +136,5 @@ class OCRStep(Step):
     def modal_status(self, status):  
         if status['code'] != 0:
             self.started = True
-            super.start()
+            self.start()
             
