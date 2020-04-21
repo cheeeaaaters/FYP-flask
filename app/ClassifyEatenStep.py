@@ -35,7 +35,7 @@ class ClassifyEatenStep(Step):
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.filter_by(eaten=None)
+        input_trays = query.filter_by(eaten=None).all()
         #input_trays = query.filter_by(ocr=None)        
 
         #TODO: pass the input to classifier        
@@ -87,6 +87,11 @@ class ClassifyEatenStep(Step):
 
     def requested_sidebar(self):        
         emit('init_sb', namespace='/classify_eaten_step')
+
+    def clean_up(self):
+        for t in Tray.query.all():
+            t.eaten = None
+        db.session.commit()
 
     @bind_socketio('/classify_eaten_step')
     def modal_status(self, status):

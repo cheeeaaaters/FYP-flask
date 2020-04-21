@@ -8,7 +8,7 @@ from torchvision import transforms, datasets, models
 
 def process(trays, backref=False):
     root = os.path.dirname(__file__)
-    load_path = os.path.join(root, 'dishes_classifier.pth')
+    load_path = os.path.join(root, 'dish_classify.pth')
 
     ds_trans = transforms.Compose([transforms.Scale((224,224)),
                                transforms.CenterCrop(224),

@@ -8,7 +8,7 @@ import sys, os
 from app import globs
 import eventlet
 
-path_to_dish_classifier = ''
+path_to_dish_classifier = '/home/ubuntu/dish'
 sys.path.insert(1, path_to_dish_classifier)
 
 '''
@@ -24,8 +24,8 @@ class ClassifyDishStep(Step):
     def __init__(self):
         super().__init__()
         self.context["step_id"] = 4
-        self.context["step_name"] = "classify_dish_step"
-        self.dish_map = ["bbq", "two_choices", "delicacies", "japanese", "teppanyaki"]
+        self.context["step_name"] = "classify_dish_step"        
+        self.dish_map = ["bbq", "japanese", "teppanyaki", "two_choices", "delicacies"]
         self.coroutine = self.step_process()
         print("Classify Dish Step Created")
 
@@ -36,7 +36,7 @@ class ClassifyDishStep(Step):
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.filter_by(dish=None)   
+        input_trays = query.filter_by(dish=None).all()   
         #input_trays = query.filter_by(ocr=None)        
 
         #TODO: pass the input to classifier        
@@ -62,13 +62,13 @@ class ClassifyDishStep(Step):
             #It will wait on this yield statement
             yield
         
-        from app.UIManager import main_content_manager
-        main_content_manager.switch_to_step(globs.step_objects['SegmentationStep'])
+        #from app.UIManager import main_content_manager
+        #main_content_manager.switch_to_step(globs.step_objects['SegmentationStep'])
 
     #If you wish to add something to start...
     def start(self): 
         if self.started:            
-            super.start()
+            super().start()
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(dish=None).count()))
@@ -90,8 +90,13 @@ class ClassifyDishStep(Step):
     def requested_sidebar(self):    
         emit('init_sb', namespace='/classify_dish_step')
 
+    def clean_up(self):
+        for t in Tray.query.all():
+            t.dish = None
+        db.session.commit()
+
     @bind_socketio('/classify_dish_step')
     def modal_status(self, status):        
         if status['code'] != 0:
             self.started = True
-            super.start()
+            self.start()
