@@ -60,13 +60,13 @@ class ClassifyEatenStep(Step):
             #It will wait on this yield statement
             yield
 
-        from app.UIManager import main_content_manager
-        main_content_manager.switch_to_step(globs.step_objects['ClassifyDishStep'])
+        #from app.UIManager import main_content_manager
+        #main_content_manager.switch_to_step(globs.step_objects['ClassifyDishStep'])
 
     #If you wish to add something to start...
     def start(self): 
         if self.started:            
-            super.start()
+            super().start()
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(eaten=None).count()))   
@@ -92,4 +92,4 @@ class ClassifyEatenStep(Step):
     def modal_status(self, status):
         if status['code'] != 0:
             self.started = True
-            super.start()
+            self.start()

@@ -10,8 +10,12 @@ var classify_eaten_socket = io('/classify_eaten_step');
 
     classify_eaten_socket.on('display', function (tray) {
         classify_eaten_progess_bar.update(tray.percentage * 100)
-        classify_eaten_gallery.append(tray)
-        classify_uneaten_gallery.append(tray)
+        if (tray.eaten){
+            classify_eaten_gallery.append(tray)
+        }else{
+            classify_uneaten_gallery.append(tray)
+        }       
+        
         classify_eaten_infer_time_chart.add({ x: i, y: tray.infer_time })
         i += 1;
     });

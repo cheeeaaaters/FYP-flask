@@ -8,6 +8,24 @@ from app import globs
 path_to_multi_classifier = ''
 sys.path.insert(1, path_to_multi_classifier)
 
+'''
+output = {
+            "before_rice_preds": None,
+            "before_vegetable_preds": None,
+            "before_meat_preds": None,
+            "after_rice_preds": None,
+            "after_vegetable_preds": None,
+            "after_meat_preds": None,
+            "before_rice_infer_time": 0,
+            "before_vegetable_infer_time": 0,
+            "before_meat_infer_time": 0,
+            "after_rice_infer_time": 0,
+            "after_vegetable_infer_time": 0,
+            "after_meat_infer_time": 0,
+            "percentage": 0
+        }
+'''
+
 class MultiLabelStep(Step):
 
     def __init__(self):
