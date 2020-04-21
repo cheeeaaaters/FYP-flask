@@ -56,7 +56,7 @@ var ocr_socket = io('/ocr_step');
 
         } else if (tray.mode == 3) {
 
-            tray.paths.forEach(d => ocr_gallery.append({ path: d }))
+            tray.paths.forEach(d => ocr_gallery.append({ path: d, ocr: tray.ocr}))
 
         }
 
@@ -114,7 +114,8 @@ var ocr_socket = io('/ocr_step');
         var gallery_config = {
             row_size: 1,
             max_size: 5,
-            absolute_path: true
+            absolute_path: true,
+            load_more: true
         }
 
         gallery_0 = gallery("#gallery_0", [], gallery_config)
@@ -122,7 +123,12 @@ var ocr_socket = io('/ocr_step');
         gallery_180 = gallery("#gallery_180", [], gallery_config)
         gallery_270 = gallery("#gallery_270", [], gallery_config)
 
-        ocr_gallery = gallery("#ocr_polling_content", [], { absolute_path: true })
+        ocr_gallery = gallery("#ocr_polling_content", [], { 
+            absolute_path: true,
+            load_more: true,
+            row_size: 7,
+            max_size: 28,
+        })
         ocr_gallery.set_description(wrappers => {
             wrappers.selectAll("text")
                 .data(d => [d.ocr])

@@ -11,16 +11,16 @@ def process():
         for filename in files:
             f_count += 1
     
-    i = 0
+    j = 0
     for subdir, dirs, files in os.walk(rootdir):
         for filename in files:
-
+            j += 1
             output = {
                 'regex': None,
                 'ocr': None,
                 'object_id': None,
-                'percentage': i/(f_count+0.0001)
-            }
+                'percentage': j/(f_count+0.0001)
+            }            
 
             path_parts = os.path.normpath(subdir).split(os.path.sep)
             vid = path_parts[-1]
@@ -74,6 +74,7 @@ def process():
 
             result_name_list = []
             most_common,num_most_common = Counter(id_list).most_common(1)[0] # 4, 6 times
+            print(most_common)
             output["ocr"] = most_common 
             yield output
             '''

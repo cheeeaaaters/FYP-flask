@@ -55,10 +55,9 @@ class OCRStep(Step):
             eventlet.sleep(0)
             yield
 
+        self.mode = 2
         self.stop()
         yield
-
-        self.mode = 2
 
         # demo.py
         '''
@@ -78,10 +77,9 @@ class OCRStep(Step):
             eventlet.sleep(0)
             yield
 
-        self.stop()
-        yield
-
         self.mode = 3
+        self.stop()
+        yield       
 
         # count.py
         '''
@@ -105,8 +103,8 @@ class OCRStep(Step):
             yield
 
         # TODO: update the html to indicate the process has finished
-        from app.UIManager import main_content_manager
-        main_content_manager.switch_to_step(globs.step_objects['ClassifyEatenStep'])
+        #from app.UIManager import main_content_manager
+        #main_content_manager.switch_to_step(globs.step_objects['ClassifyEatenStep'])
         self.mode = 1
 
     def start(self):        
@@ -116,10 +114,10 @@ class OCRStep(Step):
             from app.UIManager import modal_manager            
             modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(ocr=None).count()))   
 
-    # If you wish to add something to stop...
-    def stop(self):
-        # Add something before calling super().stop()
+    def stop(self):             
         super().stop()
+        if self.mode != 1:
+            self.started = True
 
     def render(self):
         return render_template('ocr_step.html')

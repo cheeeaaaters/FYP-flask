@@ -102,7 +102,7 @@ def process():
                 output["err"] = False
                 output["path"] = im_fn
                 output["ocr_text"].clear()
-                output["percentage"] = count / len(im_fn_list)
+                output["percentage"] = (count + 1) / len(im_fn_list)
                 print('===============')
                 print(im_fn) #im_fn: ../four_angles/recording_2019_10_30/bbq/cam_delicacies-17760-17880/73-500_0.jpg
                 start = time.time()
@@ -150,7 +150,7 @@ def process():
                     startY = box[1]
                     endX = box[4]
                     endY = box[5]
-                    ret,thresh = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+                    ret,thresh = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
                     roi = thresh[startY:endY, startX:endX]
                     
                     ###################################################
@@ -179,6 +179,8 @@ def process():
                     if text.isdigit():
                         print(text)
                         if len(text)==4:
+                            if text[0]=='9':
+                                text = '0' + text[1:]
                             data = im_fn.split("/")
                             fn = data[len(data)-1]  # 73-500_0.jpg
                             folder = data[len(data)-4] + '/' + data[len(data)-3] + '/' + data[len(data)-2] # recording_2019_10_30/bbq/cam_bbq-8000-18120
@@ -216,5 +218,169 @@ def process():
             print("Total cost time: {:.2f}s".format(cost_time_all))
             #file_whole.close()
 
+def test_one_image(img_path):
+    output = {
+        'path': None,
+        'percentage': 0,
+        'locate_time': 0,
+        'ocr_time': 0,
+        'ocr_text': [],
+        'err': False
+    }
+
+    print("???????????????????")
+    if os.path.exists(FLAGS.output_path):
+        shutil.rmtree(FLAGS.output_path)
+    os.makedirs(FLAGS.output_path)
+    os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
+    index = 0
+    with tf.get_default_graph().as_default():
+        input_image = tf.placeholder(tf.float32, shape=[None, None, None, 3], name='input_image')
+        input_im_info = tf.placeholder(tf.float32, shape=[None, 3], name='input_im_info')
+
+        global_step = tf.get_variable('global_step', [], initializer=tf.constant_initializer(0), trainable=False)
+
+        bbox_pred, cls_pred, cls_prob = model.model(input_image)
+
+        variable_averages = tf.train.ExponentialMovingAverage(0.997, global_step)
+        saver = tf.train.Saver(variable_averages.variables_to_restore())
+
+        with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+            ckpt_state = tf.train.get_checkpoint_state(FLAGS.checkpoint_path)
+            model_path = os.path.join(FLAGS.checkpoint_path, os.path.basename(ckpt_state.model_checkpoint_path))
+            print('Restore from {}'.format(model_path))
+            saver.restore(sess, model_path)
+            #file_whole = open('data/res/text/whole.txt','w')
+            im_fn_list = [img_path]
+            start_all = time.time()
+            
+            for count, im_fn in enumerate(im_fn_list):
+                output["err"] = False
+                output["path"] = im_fn
+                output["ocr_text"].clear()
+                output["percentage"] = count / len(im_fn_list)
+                print('===============')
+                print(im_fn) #im_fn: ../four_angles/recording_2019_10_30/bbq/cam_delicacies-17760-17880/73-500_0.jpg
+                start = time.time()
+                try:
+                    im = cv2.imread(im_fn)[:, :, ::-1]
+                except:
+                    print("Error reading image {}!".format(im_fn))
+                    output["err"] = True
+                    yield output
+                    continue
+
+                img, (rh, rw) = resize_image(im)
+                h, w, c = img.shape
+                im_info = np.array([h, w, c]).reshape([1, 3])
+                bbox_pred_val, cls_prob_val = sess.run([bbox_pred, cls_prob],
+                                                       feed_dict={input_image: [img],
+                                                                  input_im_info: im_info})
+
+                textsegs, _ = proposal_layer(cls_prob_val, bbox_pred_val, im_info)
+                scores = textsegs[:, 0]
+                textsegs = textsegs[:, 1:5]
+                #print(textsegs)
+
+                textdetector = TextDetector(DETECT_MODE='H')
+                # DETECT_MODE can be H / O depending on context
+                boxes = textdetector.detect(textsegs, scores[:, np.newaxis], img.shape[:2])
+                boxes = np.array(boxes, dtype=np.int)
+                print(boxes)
+
+                cost_time = (time.time() - start)
+                output["locate_time"] = cost_time
+                print("cost time: {:.2f}s".format(cost_time))
+                '''
+                Do the text recognition
+                '''
+
+                text_start = time.time()
+                grayImage = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                
+                ########################################################
+                for i, box in enumerate(boxes):
+                    cv2.polylines(img, [box[:8].astype(np.int32).reshape((-1, 1, 2))], True, color=(0, 255, 0),
+                                  thickness=2)
+                    ###################################################
+                    # First get the number id
+                    startX = box[0]
+                    startY = box[1]
+                    endX = box[4]
+                    endY = box[5]
+                    ret,thresh = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+                    roi = thresh[startY:endY, startX:endX]
+                    
+                    ###################################################
+                    # Single out the digit
+
+
+                    ###################################################
+
+
+
+                    # in order to apply Tesseract v4 to OCR text we must supply
+                    # (1) a language, (2) an OEM flag of 4, indicating that the we
+                    # wish to use the LSTM neural net model for OCR, and finally
+                    # (3) an OEM value, in this case, 7 which implies that we are
+					# treating the ROI as a single line of text
+
+                    config = ("-l digits --oem 1 --psm 7")
+					# config = ("--oem 0 -c tessedit_char_whitelist=0123456789")
+                    text = pytesseract.image_to_string(roi, config=config)
+                    print("on99 pytesseract?", text)
+                    output["ocr_text"].append(text)
+                    # add the bounding box coordinates and OCR'd text to the list
+                    # of results
+                    # Only print if number is detected
+                    cv2.imwrite(str(index) + '.png', roi)
+                    index += 1
+
+                    #im_fn: ../four_angles/recording_2019_10_30/bbq/cam_delicacies-17760-17880/73-500_0.jpg
+                    if text.isdigit():
+                        print(text)
+                        if len(text)==4:
+                            if text[0]=='9':
+                                text = '0' + text[1:]
+                            print(text)
+                            data = im_fn.split("/")
+                            fn = data[len(data)-1]  # 73-500_0.jpg
+                            folder = data[len(data)-4] + '/' + data[len(data)-3] + '/' + data[len(data)-2] # recording_2019_10_30/bbq/cam_bbq-8000-18120
+                            print(folder + '/' + fn)
+                            fn_data = fn.split("-")
+                            id_num = fn_data[0] #73
+                            image_name = fn_data[1] #500_0.jpg
+                            
+                            directory = 'OCR_text/' + folder + '/'
+                            directory = os.path.join(root, directory)
+                            if not os.path.exists(directory):
+                                os.makedirs(directory)
+                            file_whole = open(directory + 'whole-' + id_num + '.txt','a')
+                            file_whole.write(folder + '/' + fn + ':' + text+'\n')
+                            file_whole.close()
+                            
+	   					# results.append(((startX, startY, endX, endY), text))
+                output["ocr_time"] = time.time() - text_start
+
+                ########################################################
+                '''
+                img = cv2.resize(img, None, None, fx=1.0 / rh, fy=1.0 / rw, interpolation=cv2.INTER_LINEAR)
+                cv2.imwrite(os.path.join(FLAGS.output_path, os.path.basename(im_fn)), img[:, :, ::-1])
+
+                with open(os.path.join(FLAGS.output_path, os.path.splitext(os.path.basename(im_fn))[0]) + ".txt",
+                          "w") as f:
+                    for i, box in enumerate(boxes):
+                        line = ",".join(str(box[k]) for k in range(8))
+                        line += "," + str(scores[i]) + "\r\n"
+                        f.writelines(line)
+                '''
+                yield output
+            cost_time_all = (time.time() - start_all)
+            print("Total cost time: {:.2f}s".format(cost_time_all))
+            #file_whole.close()
+
 if __name__ == '__main__':
-    tf.app.run()
+    it = test_one_image('/home/ubuntu/CanteenPreProcessing/four_angles/recording_2019_10_30/bbq/cam_bbq-21240-21360/1-0_0.jpg')
+    for t in it:
+        pass    
+
