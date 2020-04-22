@@ -213,6 +213,125 @@ def main():
 
         print("time used: {}".format(Total_Inference_Time))
 
+def process(trays, model='HRNet', backref=False):
+
+    args = {
+        "mode": "normal",
+        "model_uneaten": "",  
+        "model_eaten": "", 
+        "config_uneaten": "",
+        "config_eaten": "",       
+        "half": False,
+        "output": "outputs"
+    }
+
+    if model == 'HRNet':
+        args['model_uneaten'] = ''
+        args['model_eaten'] = ''
+    elif model == 'BiSeNet':
+        args['model_uneaten'] = ''
+        args['model_eaten'] = ''
+
+    models = {
+        "eaten": None,
+        "uneaten": None
+    }
+
+    for ue in ['uneaten', 'eaten']:
+        config = json.load(open(args["config_" + ue]))
+        root = os.path.dirname(__file__)
+        # Dataset used for training the model
+        dataset_type = config['train_loader']['type']
+        loader = getattr(dataloaders, config['train_loader']['type'])(**config['train_loader']['args'])
+        to_tensor = transforms.ToTensor()
+        #normalize = transforms.Normalize(loader.MEAN, loader.STD)
+        num_classes = loader.dataset.num_classes
+        palette = loader.dataset.palette
+        base_size = loader.dataset.base_size
+        # Model
+        model = getattr(models, config['arch']['type'])(num_classes, **config['arch']['args'])
+        availble_gpus = list(range(torch.cuda.device_count()))
+        device = torch.device('cuda:0' if len(availble_gpus) > 0 else 'cpu')
+        checkpoint = torch.load(args['model'])
+        if isinstance(checkpoint, dict) and 'state_dict' in checkpoint.keys():
+            checkpoint = checkpoint['state_dict']
+        if 'module' in list(checkpoint.keys())[0] and not isinstance(model, torch.nn.DataParallel):
+            model = torch.nn.DataParallel(model)
+        model.load_state_dict(checkpoint)
+        model.to(device)
+        model.eval()
+        #test        
+        if args['half']:
+            model=model.half()
+        models[ue] = model
+
+    output_dir = os.path.join(root, 'output')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    with torch.no_grad():
+        tbar = tqdm(trays, ncols=100)
+        Total_Inference_Time=0
+        for c, img_file in enumerate(tbar):     
+            output = {
+                "mask": None,
+                "blend": None,
+                "percentage": (c+1)/len(trays),
+                "infer_time": 0,
+                "pc_0": 0,
+                "pc_1": 0,
+                "pc_2": 0,
+                "pc_3": 0,
+                "pc_total": 0
+            } 
+
+            if img_file.eaten:
+                model = models["eaten"]
+            else:
+                model = models["uneaten"]
+
+            image = Image.open(img_file.path).convert('RGB')
+            original_size=image.size
+
+            if base_size:
+                image = image.resize(size=(base_size, base_size), resample=Image.BILINEAR)
+
+            #input = normalize(to_tensor(image)).unsqueeze(0)
+            input = to_tensor(image).unsqueeze(0)
+            if args['half']:
+                input = input.half()
+            ticks = time.time()
+            if args['mode'] == 'multiscale':
+                prediction = multi_scale_predict(model, input, scales, num_classes, device)
+            elif args['mode'] == 'sliding':
+                prediction = sliding_predict(model, input, num_classes)
+            else:
+                prediction = model(input.to(device))
+                output["infer_time"] = time.time()-ticks
+                Total_Inference_Time += output["infer_time"]
+                if arch_type[:2] == 'IC':
+                    prediction = prediction[0]
+                elif arch_type[-3:] == 'OCR':
+                    prediction = prediction[0] 
+                elif arch_type[:3] == 'Enc':
+                    prediction = prediction[0]
+                elif arch_type[:5] == 'DANet':
+                    prediction = prediction[0]
+
+                if args['half']:
+                    prediction = prediction.squeeze(0).float().cpu().numpy() 
+                else:
+                    prediction = prediction.squeeze(0).cpu().numpy()  
+
+            prediction = F.softmax(torch.from_numpy(prediction), dim=0).argmax(0).cpu().numpy()
+            
+            save_images(image, prediction, output_dir, img_file.path, pal, original_size, output)
+           
+            yield (img_file, output) if backref else output
+
+        print("time used: {}".format(Total_Inference_Time))
+
+'''
 def process(trays, backref=False):
 
     root = os.path.dirname(__file__)
@@ -329,6 +448,7 @@ def process(trays, backref=False):
             yield (img_file, output) if backref else output
 
         print("time used: {}".format(Total_Inference_Time))
+'''
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Inference')
