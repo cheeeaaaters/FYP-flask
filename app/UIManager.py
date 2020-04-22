@@ -192,6 +192,7 @@ def trash_modal_status(status):
         Tray.query.delete()
         Pair.query.delete()
         SegmentationInfo.query.delete()
+        MultiLabelInfo.query.delete()
         db.session.commit()
 
 @socketio.on('hammer_button', namespace='/nav_button')

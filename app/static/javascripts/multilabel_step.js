@@ -49,7 +49,7 @@ var multilabel_socket = io('/multilabel_step');
         })
 
         pair_gallery = multilabel_gallery("#multilabel_classifier_content", [], {
-            absolute_path: false,
+            absolute_path: true,
             load_more: true
         })        
 

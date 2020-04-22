@@ -13,9 +13,9 @@ from math import ceil
 from glob import glob
 from PIL import Image
 import dataloaders
-import models
-from utils.helpers import colorize_mask
-from utils import palette
+import FYPSeg.models
+from FYPSeg.utils.helpers import colorize_mask
+from FYPSeg.utils import palette
 import time
 import cv2
 
@@ -100,12 +100,14 @@ def save_images(image, mask, output_path, image_file, palette, original_size, ou
         pc_1 = int(np.count_nonzero(resize_mask==1))
         pc_2 = int(np.count_nonzero(resize_mask==2))
         pc_3 = int(np.count_nonzero(resize_mask==3))
-        pc_total = pc_0 + pc_1 + pc_2 + pc_3
+        pc_4 = int(np.count_nonzero(resize_mask==3))
+        #pc_total = pc_0 + pc_1 + pc_2 + pc_3
         output["pc_0"] = pc_0
         output["pc_1"] = pc_1
         output["pc_2"] = pc_2
         output["pc_3"] = pc_3
-        output["pc_total"] = pc_total
+        output["pc_4"] = pc_4
+        output["pc_total"] = w * h
 
     image_file = os.path.basename(image_file).split('.')[0]
     colorized_mask = colorize_mask(mask, palette)
@@ -226,11 +228,15 @@ def process(trays, model='HRNet', backref=False):
     }
 
     if model == 'HRNet':
-        args['model_uneaten'] = ''
-        args['model_eaten'] = ''
+        args['model_uneaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/TM2-HRNetV2_OCR_Nearest/uneaten/checkpoint-epoch250.pth'
+        args['model_eaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/TM2-HRNetV2_OCR_Nearest/eaten/checkpoint-epoch150.pth'
+        args['config_uneaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/TM2-HRNetV2_OCR_Nearest/uneaten/config.json'
+        args['config_eaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/TM2-HRNetV2_OCR_Nearest/eaten/config.json'
     elif model == 'BiSeNet':
-        args['model_uneaten'] = ''
-        args['model_eaten'] = ''
+        args['model_uneaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/BiSeNet/uneaten/checkpoint-epoch250.pth'
+        args['model_eaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/BiSeNet/eaten/checkpoint-epoch250.pth'
+        args['config_uneaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/BiSeNet/uneaten/config.json'
+        args['config_eaten'] = '/home/ubuntu/FYPSeg/Seg-Ingredients/BiSeNet/eaten/config.json'
 
     models = {
         "eaten": None,
@@ -242,17 +248,18 @@ def process(trays, model='HRNet', backref=False):
         root = os.path.dirname(__file__)
         # Dataset used for training the model
         dataset_type = config['train_loader']['type']
-        loader = getattr(dataloaders, config['train_loader']['type'])(**config['train_loader']['args'])
+        #loader = getattr(dataloaders, config['train_loader']['type'])(**config['train_loader']['args'])
+        loader = config['train_loader']['args']
         to_tensor = transforms.ToTensor()
         #normalize = transforms.Normalize(loader.MEAN, loader.STD)
-        num_classes = loader.dataset.num_classes
-        palette = loader.dataset.palette
-        base_size = loader.dataset.base_size
+        num_classes = loader['num_classes']
+        pal = palette.COCO_palette
+        base_size = loader['base_size']
         # Model
-        model = getattr(models, config['arch']['type'])(num_classes, **config['arch']['args'])
+        model = getattr(FYPSeg.models, config['arch']['type'])(num_classes, **config['arch']['args'])
         availble_gpus = list(range(torch.cuda.device_count()))
         device = torch.device('cuda:0' if len(availble_gpus) > 0 else 'cpu')
-        checkpoint = torch.load(args['model'])
+        checkpoint = torch.load(args['model_' + ue])
         if isinstance(checkpoint, dict) and 'state_dict' in checkpoint.keys():
             checkpoint = checkpoint['state_dict']
         if 'module' in list(checkpoint.keys())[0] and not isinstance(model, torch.nn.DataParallel):
@@ -265,7 +272,7 @@ def process(trays, model='HRNet', backref=False):
             model=model.half()
         models[ue] = model
 
-    output_dir = os.path.join(root, 'output')
+    output_dir = os.path.join(root, args['output'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -282,6 +289,7 @@ def process(trays, model='HRNet', backref=False):
                 "pc_1": 0,
                 "pc_2": 0,
                 "pc_3": 0,
+                "pc_4": 0,
                 "pc_total": 0
             } 
 
@@ -309,13 +317,13 @@ def process(trays, model='HRNet', backref=False):
                 prediction = model(input.to(device))
                 output["infer_time"] = time.time()-ticks
                 Total_Inference_Time += output["infer_time"]
-                if arch_type[:2] == 'IC':
+                if config['arch']['type'] == 'IC':
                     prediction = prediction[0]
-                elif arch_type[-3:] == 'OCR':
+                elif config['arch']['type'] == 'OCR':
                     prediction = prediction[0] 
-                elif arch_type[:3] == 'Enc':
+                elif config['arch']['type'] == 'Enc':
                     prediction = prediction[0]
-                elif arch_type[:5] == 'DANet':
+                elif config['arch']['type'] == 'DANet':
                     prediction = prediction[0]
 
                 if args['half']:

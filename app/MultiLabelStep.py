@@ -4,6 +4,7 @@ from .socketio_helper import bind_socketio
 from flask import render_template, url_for
 import sys, os
 from app import globs
+from app.DBModels import *
 
 path_to_multi_classifier = ''
 sys.path.insert(1, path_to_multi_classifier)
@@ -39,46 +40,52 @@ class MultiLabelStep(Step):
         import multilabel_main as Classifier 
 
         #get the inputs        
-        query = db.session.query(Tray)
+        query = db.session.query(Pair)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.all()
+        input_pairs = query.filter(Pair.after_tray.multilabel_info == None).all()
         #input_trays = query.filter_by(ocr == None)        
 
         #TODO: pass the input to classifier        
-        outputStream = Classifier.process(input_trays, backref=True)
+        outputStream = Classifier.process(input_pairs, backref=True)
         
-        #classifier returns information about the input image, and eaten
-        #can be any form you feel convenient 
         for (input, info) in outputStream:
+
+            json = {}
+            
+            json["percentage"] = info["percentage"]
+            json["pair_id"] = input.id
+            json["before_path"] = input.before_tray.path
+            json["after_path"] = input.after_tray.path
+            json["infer_time"] = 0
+            json["before_label"] = []
+            json["after_label"] = []
+            for ba in ["before", "after"]:
+                mlinfo = MultiLabelInfo()
+                for food in ["rice", "vegetable", "meat"]:
+                    json["infer_time"] += info[ba + "_" + food + "_" + "infer_time"]
+                    pred = info[ba + "_" + food + "_" + "preds"]
+                    l = 0 if pred == None else pred[0].item()
+                    json[ba + "_label"].append(l)
+                    setattr(mlinfo, food, l)
+                getattr(input, ba + "_tray").multilabel_info = mlinfo
+                db.session.commit()
+
             #TODO: update the html, call js 
-            emit('display', self.convert_to_json(info), namespace='/multilabel_step')
+            emit('display', json, namespace='/multilabel_step')
             eventlet.sleep(0)
           
-            #TODO: update input using info
-            input.eaten = (info["preds"][0].item() == 1)
-            db.session.commit()
-
             print("One Loop Pass")
             #It will wait on this yield statement
             yield
 
-        #TODO: update the html to indicate the process has finished
-        emit('finish', {}, namespace='/multilabel_step')
-
     #If you wish to add something to start...
     def start(self): 
-        #Add something before calling super().start()
-        #super().start()   
-        obj = {            
-            'percentage': 0.1,
-            'before_path': url_for('static', filename='images/food.jpg'),
-            'after_path': url_for('static', filename='images/food.jpg'),            
-            'infer_time': 0.1,
-            'pair_id': 0,
-            'before_label': [1,2,2],
-            'after_label': [0,1,0]
-        }
-        emit('display', obj, namespace='/multilabel_step')   
+        if self.started:            
+            super().start()
+        else:
+            from app.UIManager import modal_manager
+            modal_manager.show(render_template('step_modal.html', 
+                num=Pair.query.filter(Pair.after_tray.multilabel_info == None).count())          
 
     #If you wish to add something to stop...
     def stop(self):
@@ -97,6 +104,14 @@ class MultiLabelStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/multilabel_step')
 
+    def clean_up(self):
+        for p in Pair.query.all():
+            p.multilabel_info = None
+        MultiLabelInfo.query.delete()
+        db.session.commit()        
+
     @bind_socketio('/multilabel_step')
-    def test(self, input):
-        pass
+    def modal_status(self, status):        
+        if status['code'] != 0:
+            self.started = True
+            self.start()

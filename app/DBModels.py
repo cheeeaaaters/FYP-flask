@@ -14,6 +14,8 @@ class Tray(db.Model):
     #segmentation_path = db.Column(db.String(120), unique=True)   
     segmentation_info =  db.relationship('SegmentationInfo', backref='tray', lazy=True)
     segmentation_info_id = db.Column(db.Integer, db.ForeignKey('segmentation_info.id'))
+    multilabel_info =  db.relationship('MultiLabelInfo', backref='tray', lazy=True)
+    multilabel_info_id = db.Column(db.Integer, db.ForeignKey('multi_label_info.id'))
     object_id = db.Column(db.Integer, nullable=False)
     ocr = db.Column(db.String(4))
     eaten = db.Column(db.Boolean)
@@ -39,13 +41,20 @@ class Pair(db.Model):
 class SegmentationInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     segmentation_path = db.Column(db.String(120), unique=True, nullable=False)
-    total =  db.Column(db.Integer, nullable=False)
-    rice = db.Column(db.Integer, nullable=False)
-    meat = db.Column(db.Integer, nullable=False)
-    vegetable = db.Column(db.Integer, nullable=False)
+    total =  db.Column(db.Integer, default=0)
+    rice = db.Column(db.Integer, default=0)
+    meat = db.Column(db.Integer, default=0)
+    vegetable = db.Column(db.Integer, default=0)
+    other = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return '<segmentation> %r' % self.segmentation_path
+
+class MultiLabelInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rice = db.Column(db.Integer)
+    meat = db.Column(db.Integer)
+    vegetable = db.Column(db.Integer)
 
 if __name__ == '__main__':
     db.metadata.clear()
