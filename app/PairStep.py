@@ -9,9 +9,6 @@ from app.DBModels import *
 from app import globs
 
 one_minute = timedelta(seconds=60)
-eat_min = timedelta(minutes=10)
-eat_max = timedelta(minutes=60)
-
 
 class PairStep(Step):
 
@@ -20,9 +17,10 @@ class PairStep(Step):
         self.context["step_id"] = 3
         self.context["step_name"] = "pair_step"
         self.state = [True, False, False]
+        self.eat_min = timedelta(minutes=10)
+        self.eat_max = timedelta(minutes=60)
 
-    @staticmethod
-    def dp(intervals, labels, state):
+    def dp(self, intervals, labels):
 
         def dish(interval):
             counter = Counter([i.dish for i in interval])            
@@ -41,15 +39,15 @@ class PairStep(Step):
             return min_time + avg_timedelta
 
         def make_sense(k1, k2):
-            check1 = (not state[0]) or (labels[k2] == 'E' and labels[k1] == 'U')
+            check1 = (not self.state[0]) or (labels[k2] == 'E' and labels[k1] == 'U')
             diff_time = avg_time(intervals[k2])-avg_time(intervals[k1])
             #print(check1)
-            check2 = check1 and (eat_min <= diff_time <= eat_max)
+            check2 = check1 and (self.eat_min <= diff_time <= self.eat_max)
             #print(check2)
-            check3 = check2 and ((not state[1]) or ((area(intervals[k2]) == 'return_area') and (
+            check3 = check2 and ((not self.state[1]) or ((area(intervals[k2]) == 'return_area') and (
                 area(intervals[k1]) == 'non_return_area')))
             #print(check3)
-            check4 = check3 and ((not state[2]) or (
+            check4 = check3 and ((not self.state[2]) or (
                 dish(intervals[k2]) == dish(intervals[k1])))
             #print(check4)
             return check4
@@ -128,23 +126,25 @@ class PairStep(Step):
             # print(intervals)
             # print(labels)
 
-            interval_pairs = PairStep.dp(intervals, labels, self.state)
+            interval_pairs = self.dp(intervals, labels, self.state)
 
             def max_pixel(interval):
                 i, max = (0, 0)
                 for j, img in enumerate(interval):
-                    if img.segmentation_info.total > max:
-                        i, max = (j, img.segmentation_info.total)
+                    info = img.segmentation_info
+                    total = info.rice + info.meat + info.vegetable
+                    if total > max:
+                        i, max = (j, total)
                 return i
 
             for (U, E) in interval_pairs:
                 i = max_pixel(intervals[U])
                 j = max_pixel(intervals[E])
                 pair = Pair(ocr=ocr, before_tray=intervals[U][i], after_tray=intervals[E][j])
-                print(intervals[U][i].segmentation_info.total, intervals[E][j].segmentation_info.total)
+                #print(intervals[U][i].segmentation_info.total, intervals[E][j].segmentation_info.total)
                 db.session.add(pair)
                 db.session.commit()
-                print(pair.before_tray.segmentation_info.total, pair.after_tray.segmentation_info.total)
+                #print(pair.before_tray.segmentation_info.total, pair.after_tray.segmentation_info.total)
                 print(pair.before_tray)
                 print(pair.after_tray)
 
@@ -182,6 +182,12 @@ class PairStep(Step):
     @bind_socketio('/pair_step')
     def change_state(self, state):
         self.state = state
+
+    @bind_socketio('/pair_step')
+    def change_eating_interval(self, min, max):
+        self.eat_min = timedelta(minutes=int(min))
+        self.eat_max = timedelta(minutes=int(max))
+        #print(min, max)
 
     @bind_socketio('/pair_step')
     def modal_status(self, status):        

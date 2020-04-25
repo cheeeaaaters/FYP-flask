@@ -83,7 +83,8 @@ var segmentation_socket = io('/segmentation_step');
             image_width: 900,
             mv: 30,
             absolute_path: true,
-            load_more: true
+            load_more: true,
+            no_cache: false
         }
 
         segmentation_gallery = gallery("#segmentation_gallery", [], gallery_config)

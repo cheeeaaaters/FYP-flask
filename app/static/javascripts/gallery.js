@@ -1,3 +1,6 @@
+function get_time() {
+    return Date.now()
+}
 
 function gallery(selection, tray_detection_data, config) {
 
@@ -10,8 +13,10 @@ function gallery(selection, tray_detection_data, config) {
     var load_more = (config.load_more === undefined) ? false : config.load_more
     var load_more_size = config.load_more_size || max_size
     var absolute_path = (config.absolute_path === undefined) ? true : config.absolute_path
+    var no_cache = (config.no_cache === undefined) ? false : config.no_cache
     //var absolute_path = false
     var path_prefix = absolute_path ? '/my_images/' : ''
+    var path_suffix = no_cache ? ('?time=' + get_time()) : ''
     var description;
     var onClick;
 
@@ -38,7 +43,7 @@ function gallery(selection, tray_detection_data, config) {
             .style("flex-direction", "column")
 
         wrappers.selectAll("img")
-            .data(d => [path_prefix + d.path])
+            .data(d => [path_prefix + d.path + path_suffix])
             .join("img")
             .attr("src", p => p)
             .attr("width", image_width)

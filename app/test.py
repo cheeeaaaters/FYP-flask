@@ -163,6 +163,7 @@ def get_images(filename):
     #p = MyPath("/home/ubuntu/FYP-flask/food_.jpg")
     t = filename.split(".")[-1]
     p = Path(filename)
+    print(p)
     #print(t, p)
     if t == 'jpg':
         return send_file(filename_or_fp=p, mimetype="image/jpeg")

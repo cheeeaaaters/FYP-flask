@@ -1,2 +1,37 @@
 <div id="pair_list_group">
 </div>
+
+<div class="double_slider_container">
+<div slider id="slider-distance">
+    <div>
+      <div inverse-left style="width:8%;"></div>
+      <div inverse-right style="width:50%;"></div>
+      <div range style="left:8%;right:50%;"></div>
+      <span thumb style="left:8%;"></span>
+      <span thumb style="left:50%;"></span>
+      <div sign style="left:8%;">
+        <span id="value">10</span>
+      </div>
+      <div sign style="left:50%;">
+        <span id="value">60</span>
+      </div>
+    </div>
+    <input id="time_slider_min" type="range" value="10" max="120" min="0" step="1" oninput="
+    this.value=Math.min(this.value,this.parentNode.childNodes[5].value-1);
+    let value = (this.value/parseInt(this.max))*100    
+    var children = this.parentNode.childNodes[1].childNodes;
+    children[1].style.width=value+'%';
+    children[5].style.left=value+'%';
+    children[7].style.left=value+'%';children[11].style.left=value+'%';
+    children[11].childNodes[1].innerHTML=this.value;" />
+  
+    <input id="time_slider_max" type="range" value="60" max="120" min="0" step="1" oninput="
+    this.value=Math.max(this.value,this.parentNode.childNodes[3].value-(-1));
+    let value = (this.value/parseInt(this.max))*100
+    var children = this.parentNode.childNodes[1].childNodes;
+    children[3].style.width=(100-value)+'%';
+    children[5].style.right=(100-value)+'%';
+    children[9].style.left=value+'%';children[13].style.left=value+'%';
+    children[13].childNodes[1].innerHTML=this.value;" />
+  </div>
+</div>

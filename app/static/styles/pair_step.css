@@ -3,3 +3,14 @@
     margin-left: 60px;
     margin-top: 20px;    
 }
+
+.double_slider_container{
+    margin: 60px 0;   
+    display: flex;
+    justify-content: center;
+}
+
+.double_slider_container > .slidecontainer{
+    position: absolute;
+    width: 200px;    
+}

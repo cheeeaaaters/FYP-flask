@@ -75,9 +75,9 @@ var classify_dish_socket = io('/classify_dish_step');
             row_size: 6,
             max_size: 6,
             mh: 20,
-            absolute_path: false
+            absolute_path: false            
         }
-        var data = [
+        var data = [            
             {path: 'static/images/bbq.jpg', dish: 'bbq'},
             {path: 'static/images/two_choices.jpg', dish: 'two_choices'},
             {path: 'static/images/delicacies.jpg', dish: 'delicacies'},

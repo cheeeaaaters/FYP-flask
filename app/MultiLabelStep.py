@@ -42,7 +42,8 @@ class MultiLabelStep(Step):
         #get the inputs        
         query = db.session.query(Pair)
         #TODO: Optional, may let user configure filter or not
-        input_pairs = query.filter(Pair.after_tray.multilabel_info == None).all()
+        input_pairs = query.filter(Pair.after_tray.multilabel_info == None
+        & Pair.before_tray.dish != None & Pair.after_tray.dish != None).all()
         #input_trays = query.filter_by(ocr == None)        
 
         #TODO: pass the input to classifier        
@@ -85,7 +86,8 @@ class MultiLabelStep(Step):
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', 
-                num=Pair.query.filter(Pair.after_tray.multilabel_info == None).count())          
+                num=Pair.query.filter(Pair.after_tray.multilabel_info == None
+                & Pair.before_tray.dish != None & Pair.after_tray.dish != None).count()))         
 
     #If you wish to add something to stop...
     def stop(self):

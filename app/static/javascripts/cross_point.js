@@ -13,9 +13,11 @@ function cross_point(selection, data, config) {
 
     function update() {
 
-        if ((data === undefined) || (len(data) < 2)) {
+        if ((data === undefined) || (data.length < 2)) {
             return
         }
+
+        d3.select(selection).html(null)
 
         d3.select(selection)
             .append("svg")
