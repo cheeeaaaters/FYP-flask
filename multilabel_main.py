@@ -9,20 +9,21 @@ from torchvision import transforms, datasets, models
 
 def process(pairs, backref=False):
 
-    dishes = {
-        "SiuMe": {"rice": 0, "vegetable": 0, "meat": 0},
-        "Japan": {"rice": 0},
-        "Teppan": {"rice": 0},
-        "White": {},
-        "TwoDishes": {}
+    root = os.path.dirname(__file__)
+
+    dishes = {"BBQ":{"rice":0,"vegetable":0,"meat":0},
+    		  "Japan":{"rice":0},
+    		  "Teppan":{"rice":0,"vegetable":0,"meat":0},
+    		  "TwinDishes":{"rice":0,"vegetable":0,"meat":0},
+    		  "White":{"rice":0,"vegetable":0,"meat":0}
     }
 
     dishesMap = {
-        'bbq': "SiuMe", 
+        'bbq': "BBQ", 
         'japanese': "Japan",
         'teppanyaki': "Teppan",
         'delicacies': "White", 
-        'two_choices': "TwoDishes"
+        'two_choices': "TwinDishes"
     }
 
     ds_trans = transforms.Compose([transforms.Scale((224,224)),
@@ -31,14 +32,17 @@ def process(pairs, backref=False):
                                #,normalize
                                ])
 
-    for dish, foodtypes in dishes:
-        for foodtype, volume_net in foodtypes:
-            volume_net = models.resnext101_32x8d(pretrained=True)
-            num_ftrs = volume_net.fc.in_features
-            volume_net.fc = torch.nn.Linear(num_ftrs, 3)
-            volume_net.load_state_dict(dish+"_"+foodtype+".pth")
-            volume_net.cuda()
-            volume_net.eval()
+    for dish, foodtypes in dishes.items():        
+        for foodtype in foodtypes:
+            foodtypes[foodtype] = models.resnext101_32x8d(pretrained=True)
+            num_ftrs = foodtypes[foodtype].fc.in_features
+            foodtypes[foodtype].fc = torch.nn.Linear(num_ftrs, 3)
+            foodtypes[foodtype] = foodtypes[foodtype].cuda()
+            print(dish+"_"+foodtype+".pth")
+            load_path = os.path.join(root, dish+"_"+foodtype+".pth")
+            foodtypes[foodtype].load_state_dict(torch.load(load_path))
+            foodtypes[foodtype].train(False)
+            foodtypes[foodtype].eval()
 
     for i, pair in enumerate(pairs):
 
@@ -62,7 +66,7 @@ def process(pairs, backref=False):
         image_before = Image.open(pair.before_tray.path)
         image = ds_trans(image_before)
         image = torch.unsqueeze(image, dim=0)
-        for foodtype, volume_net in dishes[before_dish]:            
+        for foodtype, volume_net in dishes[before_dish].items():            
             time_start = time.time()
             outputs = volume_net(image.cuda())
             _, preds = torch.max(outputs.data, 1)
@@ -73,7 +77,7 @@ def process(pairs, backref=False):
         image_after = Image.open(pair.after_tray.path)
         image = ds_trans(image_after)
         image = torch.unsqueeze(image, dim=0)
-        for foodtype, volume_net in dishes[after_dish]:            
+        for foodtype, volume_net in dishes[after_dish].items():            
             time_start = time.time()
             outputs = volume_net(image.cuda())
             _, preds = torch.max(outputs.data, 1)

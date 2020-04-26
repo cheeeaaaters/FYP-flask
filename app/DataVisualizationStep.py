@@ -2,6 +2,7 @@ from .Step import Step
 from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from flask import render_template, url_for
+from app.DBModels import *
 
 class DataVisualizationStep(Step):
 
@@ -33,79 +34,189 @@ class DataVisualizationStep(Step):
     def requested_sidebar(self):        
         emit('init_sb', namespace='/data_visualization_step')
 
+    def get_prop(self, d):
+        seg = d.segmentation_info
+        a = seg.rice / seg.total            
+        b = seg.vegetable / seg.total            
+        c = seg.meat / seg.total 
+        d = 1 - a - b - c
+        return (a, b, c, d)
+
     @bind_socketio('/data_visualization_step')
     def q1(self):
-        return [
-            { 'type': "rice", 'count': 6 },
-            { 'type': "vegetable", 'count': 2 },
-            { 'type': "meat", 'count': 4 }
+        data = Tray.query.filter(Tray.eaten == False & Tray.segmentation_info != None).all()
+        counts = [
+            { 'type': "rice", 'count': 0},
+            { 'type': "vegetable", 'count': 0},
+            { 'type': "meat", 'count': 0}
         ]
+        for dd in data:
+            (a, b, c, _) = self.get_prop(dd)            
+            counts[0]['count'] += a          
+            counts[1]['count'] += b           
+            counts[2]['count'] += c        
+        
+        return counts        
 
     @bind_socketio('/data_visualization_step')
     def q1_2(self):
-        return [
-            { 'type': "rice", 'count': 6 },
-            { 'type': "vegetable", 'count': 2 },
-            { 'type': "meat", 'count': 4 },
-            { 'type': "background", 'count': 16 }            
+        data = Tray.query.filter(Tray.eaten == False & Tray.segmentation_info != None).all()
+        counts = [
+            { 'type': "rice", 'count': 0},
+            { 'type': "vegetable", 'count': 0},
+            { 'type': "meat", 'count': 0},
+            { 'type': "background", 'count': 0 } 
         ]
+        for dd in data:
+            (a, b, c, d) = self.get_prop(dd)
+            counts[0]['count'] += a           
+            counts[1]['count'] += b           
+            counts[2]['count'] += c  
+            counts[3]['count'] += d  
+        
+        return counts        
 
     @bind_socketio('/data_visualization_step')
     def q2(self):
-        return [
-            { 'name': 'bbq', 'count': [10, 20, 40] },
-            { 'name': 'two choices', 'count': [20, 30, 50] },
-            { 'name': 'delicacies', 'count': [5, 6, 20] },
-            { 'name': 'japanese', 'count': [12, 24, 20] },
-            { 'name': 'teppanyaki', 'count': [5, 10, 20] }
-        ]   
+        data = Tray.query.filter(Tray.eaten == False & Tray.dish != None
+        & Tray.segmentation_info != None).all()
+        counts = [
+            { 'name': 'bbq', 'count': [0 0 0] },
+            { 'name': 'two choices', 'count': [0 0 0] },
+            { 'name': 'delicacies', 'count': [0 0 0] },
+            { 'name': 'japanese', 'count': [0 0 0] },
+            { 'name': 'teppanyaki', 'count': [0 0 0] }
+        ]
+        index_map = {
+            'bbq': 0, 'two_choices': 1, 'delicacies': 2, 'japanese': 3, 'teppanyaki': 4
+        }
+        for dd in data:
+            (a, b, c, _) = self.get_prop(dd)
+            counts[index_map[dd.dish]]['count'][0] += a       
+            counts[index_map[dd.dish]]['count'][1] += b
+            counts[index_map[dd.dish]]['count'][2] += c     
+        for c in counts:
+            s = sum(c['count'])
+            if s != 0:   
+                for cc in c['count']:
+                    cc = cc/s
+        return counts
 
     @bind_socketio('/data_visualization_step')
     def q2_2(self):
-        return [
-            { 'name': 'bbq', 'count': [10, 20, 40, 30] },
-            { 'name': 'two choices', 'count': [20, 30, 50, 0] },
-            { 'name': 'delicacies', 'count': [5, 6, 20, 69] },
-            { 'name': 'japanese', 'count': [12, 24, 20, 44] },
-            { 'name': 'teppanyaki', 'count': [5, 10, 20, 65] }
-        ]  
+        data = Tray.query.filter(Tray.eaten == False & Tray.dish != None
+        & Tray.segmentation_info != None).all()
+        counts = [
+            { 'name': 'bbq', 'count': [0 0 0 0] },
+            { 'name': 'two choices', 'count': [0 0 0 0] },
+            { 'name': 'delicacies', 'count': [0 0 0 0] },
+            { 'name': 'japanese', 'count': [0 0 0 0] },
+            { 'name': 'teppanyaki', 'count': [0 0 0 0] }
+        ]
+        index_map = {
+            'bbq': 0, 'two_choices': 1, 'delicacies': 2, 'japanese': 3, 'teppanyaki': 4
+        }
+        for dd in data:
+            (a, b, c, d) = self.get_prop(dd)
+            counts[index_map[dd.dish]]['count'][0] += a       
+            counts[index_map[dd.dish]]['count'][1] += b
+            counts[index_map[dd.dish]]['count'][2] += c     
+            counts[index_map[dd.dish]]['count'][3] += d
+        for c in counts:
+            s = sum(c['count'])
+            if s != 0:   
+                for cc in c['count']:
+                    cc = cc/s
+        return counts
 
     @bind_socketio('/data_visualization_step')
     def q3(self):
-        return [
-            { 'type': "rice", 'count': 6 },
-            { 'type': "vegetable", 'count': 2 },
-            { 'type': "meat", 'count': 4 }
+        data = Tray.query.filter(Tray.eaten == True & Tray.segmentation_info != None).all()
+        counts = [
+            { 'type': "rice", 'count': 0},
+            { 'type': "vegetable", 'count': 0},
+            { 'type': "meat", 'count': 0}
         ]
+        for dd in data:
+            (a, b, c, _) = self.get_prop(dd)
+            counts[0]['count'] += a          
+            counts[1]['count'] += b           
+            counts[2]['count'] += c           
+        
+        return counts 
 
     @bind_socketio('/data_visualization_step')
     def q3_2(self):
-        return [
-            { 'type': "rice", 'count': 6 },
-            { 'type': "vegetable", 'count': 2 },
-            { 'type': "meat", 'count': 4 },
-            { 'type': "background", 'count': 16 }            
+        data = Tray.query.filter(Tray.eaten == True & Tray.segmentation_info != None).all()
+        counts = [
+            { 'type': "rice", 'count': 0},
+            { 'type': "vegetable", 'count': 0},
+            { 'type': "meat", 'count': 0},
+            { 'type': "background", 'count': 0 } 
         ]
+        for dd in data:
+            (a, b, c, d) = self.get_prop(dd)
+            counts[0]['count'] += a           
+            counts[1]['count'] += b           
+            counts[2]['count'] += c  
+            counts[3]['count'] += d  
+        
+        return counts      
 
     @bind_socketio('/data_visualization_step')
     def q4(self):
-        return [
-            { 'name': 'bbq', 'count': [10, 20, 40] },
-            { 'name': 'two choices', 'count': [20, 30, 50] },
-            { 'name': 'delicacies', 'count': [5, 6, 20] },
-            { 'name': 'japanese', 'count': [12, 24, 20] },
-            { 'name': 'teppanyaki', 'count': [5, 10, 20] }
-        ]   
+        data = Tray.query.filter(Tray.eaten == True & Tray.dish != None
+        & Tray.segmentation_info != None).all()
+        counts = [
+            { 'name': 'bbq', 'count': [0 0 0] },
+            { 'name': 'two choices', 'count': [0 0 0] },
+            { 'name': 'delicacies', 'count': [0 0 0] },
+            { 'name': 'japanese', 'count': [0 0 0] },
+            { 'name': 'teppanyaki', 'count': [0 0 0] }
+        ]
+        index_map = {
+            'bbq': 0, 'two_choices': 1, 'delicacies': 2, 'japanese': 3, 'teppanyaki': 4
+        }
+        for dd in data:
+            (a, b, c, _) = self.get_prop(dd)
+            counts[index_map[dd.dish]]['count'][0] += a       
+            counts[index_map[dd.dish]]['count'][1] += b
+            counts[index_map[dd.dish]]['count'][2] += c     
+        for c in counts:
+            s = sum(c['count'])
+            if s != 0:   
+                for cc in c['count']:
+                    cc = cc/s
+
+        return counts
 
     @bind_socketio('/data_visualization_step')
     def q4_2(self):
-        return [
-            { 'name': 'bbq', 'count': [10, 20, 40, 30] },
-            { 'name': 'two choices', 'count': [20, 30, 50, 0] },
-            { 'name': 'delicacies', 'count': [5, 6, 20, 69] },
-            { 'name': 'japanese', 'count': [12, 24, 20, 44] },
-            { 'name': 'teppanyaki', 'count': [5, 10, 20, 65] }
-        ]  
+        data = Tray.query.filter(Tray.eaten == True & Tray.dish != None
+        & Tray.segmentation_info != None).all()
+        counts = [
+            { 'name': 'bbq', 'count': [0 0 0 0] },
+            { 'name': 'two choices', 'count': [0 0 0 0] },
+            { 'name': 'delicacies', 'count': [0 0 0 0] },
+            { 'name': 'japanese', 'count': [0 0 0 0] },
+            { 'name': 'teppanyaki', 'count': [0 0 0 0] }
+        ]
+        index_map = {
+            'bbq': 0, 'two_choices': 1, 'delicacies': 2, 'japanese': 3, 'teppanyaki': 4
+        }
+        for dd in data:
+            (a, b, c, d) = self.get_prop(dd)
+            counts[index_map[dd.dish]]['count'][0] += a       
+            counts[index_map[dd.dish]]['count'][1] += b
+            counts[index_map[dd.dish]]['count'][2] += c     
+            counts[index_map[dd.dish]]['count'][3] += d
+        for c in counts:
+            s = sum(c['count'])
+            if s != 0:   
+                for cc in c['count']:
+                    cc = cc/s
+                    
+        return counts
 
     @bind_socketio('/data_visualization_step')
     def q5(self):

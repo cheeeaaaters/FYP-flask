@@ -28,7 +28,7 @@ class SegmentationStep(Step):
         print("Start Process...")        
 
         #get the inputs      
-        input_trays = Tray.query.filter_by(segmentation_info=None).all()      
+        input_trays = Tray.query.filter_by(segmentation_info=None)      
 
         #TODO: pass the input to model        
         outputStream = Seg.process(input_trays, model=self.model, backref=True)

@@ -55,6 +55,12 @@ class MultiLabelInfo(db.Model):
     rice = db.Column(db.Integer)
     meat = db.Column(db.Integer)
     vegetable = db.Column(db.Integer)
+    rice_conf = db.Column(db.Float)
+    meat_conf = db.Column(db.Float)
+    vegetable_conf = db.Column(db.Float)
+
+    def __repr__(self):
+        return '<multilabel> (%d %d %d)' % (self.rice, self.vegetable, self.meat)
 
 if __name__ == '__main__':
     db.metadata.clear()

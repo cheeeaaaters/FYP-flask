@@ -5,8 +5,9 @@ from flask import render_template, url_for
 import sys, os
 from app import globs
 from app.DBModels import *
+import eventlet
 
-path_to_multi_classifier = ''
+path_to_multi_classifier = '/home/ubuntu/multilabel'
 sys.path.insert(1, path_to_multi_classifier)
 
 '''
@@ -42,8 +43,8 @@ class MultiLabelStep(Step):
         #get the inputs        
         query = db.session.query(Pair)
         #TODO: Optional, may let user configure filter or not
-        input_pairs = query.filter(Pair.after_tray.multilabel_info == None
-        & Pair.before_tray.dish != None & Pair.after_tray.dish != None).all()
+        input_pairs = query.filter(Pair.after_tray.has((Tray.multilabel_info == None) & (Tray.dish != None))
+                & Pair.before_tray.has(Tray.dish != None)).all()
         #input_trays = query.filter_by(ocr == None)        
 
         #TODO: pass the input to classifier        
@@ -52,6 +53,7 @@ class MultiLabelStep(Step):
         for (input, info) in outputStream:
 
             json = {}
+            print(info)
             
             json["percentage"] = info["percentage"]
             json["pair_id"] = input.id
@@ -86,8 +88,8 @@ class MultiLabelStep(Step):
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', 
-                num=Pair.query.filter(Pair.after_tray.multilabel_info == None
-                & Pair.before_tray.dish != None & Pair.after_tray.dish != None).count()))         
+                num=Pair.query.filter(Pair.after_tray.has((Tray.multilabel_info == None) & (Tray.dish != None))
+                & Pair.before_tray.has(Tray.dish != None)).count()))         
 
     #If you wish to add something to stop...
     def stop(self):
@@ -108,7 +110,8 @@ class MultiLabelStep(Step):
 
     def clean_up(self):
         for p in Pair.query.all():
-            p.multilabel_info = None
+            p.before_tray.multilabel_info = None
+            p.after_tray.multilabel_info = None
         MultiLabelInfo.query.delete()
         db.session.commit()        
 
