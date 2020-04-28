@@ -7,7 +7,7 @@ import torchvision
 from torchvision import transforms, datasets, models
 
 
-def process(pairs, backref=False):
+def process(trays, backref=False):
 
     root = os.path.dirname(__file__)
 
@@ -44,6 +44,38 @@ def process(pairs, backref=False):
             foodtypes[foodtype].train(False)
             foodtypes[foodtype].eval()
 
+    for i, tray in enumerate(trays):
+
+        output = {
+            "rice_preds": None,
+            "vegetable_preds": None,
+            "meat_preds": None,            
+            "rice_infer_time": 0,
+            "vegetable_infer_time": 0,
+            "meat_infer_time": 0,            
+            "percentage": 0
+        }
+
+        before_dish = dishesMap[tray.dish]
+        try:
+            image_before = Image.open(tray.path)
+        except:
+            print("ERROR IN MULTILABEL!!!")
+            yield (tray, output) if backref else output
+            continue 
+
+        image = ds_trans(image_before)
+        image = torch.unsqueeze(image, dim=0)
+        for foodtype, volume_net in dishes[before_dish].items():            
+            time_start = time.time()
+            outputs = volume_net(image.cuda())
+            _, preds = torch.max(outputs.data, 1)
+            output[foodtype + "_infer_time"] = time.time() - time_start
+            output[foodtype + "_preds"] = preds
+
+        yield (tray, output) if backref else output 
+
+    '''
     for i, pair in enumerate(pairs):
 
         output = {
@@ -85,4 +117,5 @@ def process(pairs, backref=False):
             output["after_" + foodtype + "_preds"] = preds
 
         output["percentage"] = (i+1)/len(pairs)
-        yield (pair, output) if backref else output
+        yield (pair, output) if backref else output 
+    '''

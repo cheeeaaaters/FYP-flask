@@ -94,7 +94,7 @@ class TrayDetectionStep(Step):
                     # emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
                     # Example use case: when client internet dies, we may want to stop the process.
 
-                    print("One Loop Pass")
+                    #print("One Loop Pass")
 
                 else:
                     emit('display', tray, namespace='/tray_detection_step')
@@ -184,15 +184,20 @@ class TrayDetectionStep(Step):
         return (area, date_start, date_end)
 
     @bind_socketio('/tray_detection_step')
-    def modal_status(self, status):   
+    def modal_status(self, status):
+        start = datetime(2019, 9, 10, 12)
+        end = datetime(2019, 9, 10, 3)
         if status['code'] != 0:
             for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
                 for f in files:
-                    if Video.query.filter_by(path = os.path.join(r, f)).first() == None:
+                    if Video.query.filter_by(path = os.path.join(r, f)).first() == None:                        
                         print("Loaded video: " + os.path.join(r, f))
                         v = Video(path = os.path.join(r, f))
-                        db.session.add(v)
-                        db.session.commit() 
+                        (area, date_start, date_end) = self.convert_video(v)
+                        if start <= date_start <= end:  
+                            print("Loaded video: " + os.path.join(r, f))                          
+                            db.session.add(v)
+                            db.session.commit() 
             self.started = True
             self.start()
             

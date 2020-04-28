@@ -98,6 +98,8 @@ class SegmentationStep(Step):
             self.model = 'HRNet'
         elif model == 'bisenet':
             self.model = 'BiSeNet'
+        elif model == 'tensorrt':
+            self.model = 'TensorRT'
 
     @bind_socketio('/segmentation_step')
     def modal_status(self, status):        

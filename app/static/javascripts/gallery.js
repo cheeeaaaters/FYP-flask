@@ -16,9 +16,10 @@ function gallery(selection, tray_detection_data, config) {
     var no_cache = (config.no_cache === undefined) ? false : config.no_cache
     //var absolute_path = false
     var path_prefix = absolute_path ? '/my_images/' : ''
-    var path_suffix = no_cache ? ('?time=' + get_time()) : ''
+    var path_suffix = no_cache ? () => ('?time=' + get_time()) : () => ''
     var description;
     var onClick;
+    var array_limit = config.array_limit || 500
 
     var vwrapper = d3.select(selection)
         .append("div")
@@ -43,7 +44,7 @@ function gallery(selection, tray_detection_data, config) {
             .style("flex-direction", "column")
 
         wrappers.selectAll("img")
-            .data(d => [path_prefix + d.path + path_suffix])
+            .data(d => [path_prefix + d.path + path_suffix()])
             .join("img")
             .attr("src", p => p)
             .attr("width", image_width)
@@ -78,6 +79,9 @@ function gallery(selection, tray_detection_data, config) {
     return {
         append: function (path) {
             tray_detection_data.unshift(path)
+            if (tray_detection_data.length > array_limit) {
+                tray_detection_data.pop()
+            }
             data = tray_detection_data.slice(0, max_size)
             update_gallery(data)
         },

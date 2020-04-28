@@ -19,6 +19,7 @@ sys.path.insert(1, path_to_darknet)
 import darknet
 
 root = os.path.dirname(__file__)
+out_root = '/home/ubuntu/data/fyp'
 
 # load weights and set defaults
 #config_path='/home/ubuntu/prune_12000/prune.cfg'
@@ -69,7 +70,7 @@ def detect_image(img, vh, vw):
 #videopath = 'data/videos/cam_one-09000-09120.mov'
 #folderpath = 'data/videos/'
 
-def process(videos, back_ref=False):
+def process(videos, back_ref=False, skip_frames=0):
     count = 0    
     output = {
         'path': None,
@@ -78,11 +79,16 @@ def process(videos, back_ref=False):
         'percentage': 0,
         'infer_time': 0,
     }
+
+    fo = open("test_result.txt", "a")  
+    starttime = time.time()
     
     for video in videos:
+        vid_time = time.time()
+
         frames = 0
         subdir, filename = os.path.split(video.path)
-        outputpath = os.path.join(root ,'data/output/', filename)
+        #outputpath = os.path.join(out_root ,'yolo', filename)
         vid = cv2.VideoCapture(video.path)
         vidCopy = cv2.VideoCapture(video.path)
         total_num_frames = 0
@@ -100,7 +106,7 @@ def process(videos, back_ref=False):
             
         vw = frame.shape[1]
         vh = frame.shape[0]
-        print ("Video size", vw,vh)
+        ## print ("Video size", vw,vh)
                 
         pre_unique_labels = []
         flag = False
@@ -108,9 +114,14 @@ def process(videos, back_ref=False):
             eventlet.sleep(0)
             ret, frame = vid.read()
             if not ret:
-                break
-            frames += 1
-            print(frames)
+                break   
+            frames += 1         
+            for skip in range(skip_frames):
+                ret, frame = vid.read()                
+                if not ret:
+                    break
+                frames += 1           
+            ## print(frames)
             output["percentage"] = frames/total_num_frames
             output["path"] = None
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -136,7 +147,7 @@ def process(videos, back_ref=False):
                         parts = subdir.split('/')
                         new_folder = parts[-2] + '/' + parts[-1] + '/'
                         directory = 'result/' + new_folder + filename[:-4] + '/'
-                        directory = os.path.join(root, directory)
+                        directory = os.path.join(out_root, directory)
                         if cls == "w/ food":
                             if not os.path.exists(directory):
                                 os.makedirs(directory)					
@@ -147,7 +158,7 @@ def process(videos, back_ref=False):
                                 count += 1
                                 output["path"] = write_path
                                 output["count"] = count
-                                print("==================================================" , count, frames, total_num_frames)
+                                ## print("==================================================" , count, frames, total_num_frames)
                             except:
                                 print("Exception in object tracker")
 
@@ -155,7 +166,13 @@ def process(videos, back_ref=False):
                 yield (video, output)
             else:
                 yield output
+
+        fo.write("vidtime: %f\n" % (time.time() - vid_time)) 
                             
+    totaltime = time.time()-starttime    
+      
+    fo.write("totaltime: %f\n" % totaltime)    
+    fo.close()
 
 '''
 import cv2

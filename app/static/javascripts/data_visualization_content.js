@@ -3,6 +3,7 @@ var data_visualization_socket = io('/data_visualization_step');
 (function () {
 
     var color = ['#ff5959', '#8fff87', '#87a9ff', '#444444']
+    var color_2 = ['#ff5959', '#8fff87', '#87a9ff', '#f5d742', '#444444']
     var data_1 = [
         { type: "rice", count: 6 },
         { type: "vegetable", count: 2 },
@@ -138,11 +139,11 @@ var data_visualization_socket = io('/data_visualization_step');
             for (const key in data_visualization_sb) {
                 data_visualization_sb[key].addClass('hidden')
             }
-            data_visualization_socket.emit('q1', (data) => {
-                pieChart(data, "np_3", 400, 400, color)
+            data_visualization_socket.emit('q3', (data) => {
+                pieChart(data, "np_3", 400, 400, color_2)
             })  
-            data_visualization_socket.emit('q1_2', (data) => {
-                pieChart(data, "np_3_2", 400, 400, color)
+            data_visualization_socket.emit('q3_2', (data) => {
+                pieChart(data, "np_3_2", 400, 400, color_2)
             })   
         })
 
@@ -155,10 +156,10 @@ var data_visualization_socket = io('/data_visualization_step');
                 data_visualization_sb[key].addClass('hidden')
             }
             data_visualization_socket.emit('q4', (data) => {
-                stackBarChart(data, "np_4", margin, 800, color)
+                stackBarChart(data, "np_4", margin, 800, color_2)
             })  
             data_visualization_socket.emit('q4_2', (data) => {
-                stackBarChart(data, "np_4_2", margin, 800, color)
+                stackBarChart(data, "np_4_2", margin, 800, color_2)
             })     
         })
 
@@ -200,7 +201,9 @@ var data_visualization_socket = io('/data_visualization_step');
             for (const key in data_visualization_sb) {
                 data_visualization_sb[key].addClass('hidden')
             }            
-            groupBarChart(groups, "p_2", margin2, 1000, color)               
+            data_visualization_socket.emit('q6', (data) => {
+                groupBarChart(data, "p_2", margin2, 1000, color)
+            })                             
         })
 
         for (const key in data_visualization_tabs) {

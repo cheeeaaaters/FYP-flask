@@ -40,16 +40,40 @@ class MultiLabelStep(Step):
         print("Start Process...")
         import multilabel_main as Classifier 
 
-        #get the inputs        
+        #get the inputs  
+        '''      
         query = db.session.query(Pair)
         #TODO: Optional, may let user configure filter or not
         input_pairs = query.filter(Pair.after_tray.has((Tray.multilabel_info == None) & (Tray.dish != None))
                 & Pair.before_tray.has(Tray.dish != None)).all()
         #input_trays = query.filter_by(ocr == None)        
+        '''
+        input_trays = Tray.query.filter(Tray.multilabel_info == None) 
 
         #TODO: pass the input to classifier        
-        outputStream = Classifier.process(input_pairs, backref=True)
+        #outputStream = Classifier.process(input_pairs, backref=True)
+        outputStream = Classifier.process(input_trays, backref=True)
+
+        fo = open("multilabel_result.txt", "a")
+
+        start_time = time.time()
+        for (input, info) in outputStream:
+
+            fo.write("path: %s\n" % input.path)
+            rice = 0 if info['rice_preds'] == None else info['rice_preds'][0].item()
+            vegetable = 0 if info['vegetable_preds'] == None else info['vegetable_preds'][0].item()
+            meat = 0 if info['meat_preds'] == None else info['meat_preds'][0].item()
+            fo.write("label: %d %d %d" % (rice, vegetable, meat)) 
+            eventlet.sleep(0)
+          
+            print("One Loop Pass")
+            #It will wait on this yield statement
+            yield
+
+        print("ALL: ", time.time() - start_time)
+        fo.close()
         
+        '''
         for (input, info) in outputStream:
 
             json = {}
@@ -80,6 +104,7 @@ class MultiLabelStep(Step):
             print("One Loop Pass")
             #It will wait on this yield statement
             yield
+        '''
 
     #If you wish to add something to start...
     def start(self): 

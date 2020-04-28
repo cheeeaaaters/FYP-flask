@@ -18,12 +18,15 @@ from FYPSeg.utils.helpers import colorize_mask
 from FYPSeg.utils import palette
 import time
 import cv2
+import eventlet
+
 
 import pycuda.autoinit
 import numpy as np
 import pycuda.driver as cuda
 import tensorrt as trt
 
+output_root = "/home/ubuntu/data/fyp"
 
 class HostDeviceMem(object):
     def __init__(self, host_mem, device_mem):
@@ -258,6 +261,7 @@ def main():
 
         Total_Inference_Time = 0
         for img_file in tbar:
+            eventlet.sleep(0)
             image = Image.open(img_file).convert('RGB')
             original_size = image.size
 
@@ -267,6 +271,7 @@ def main():
 
             #input = normalize(to_tensor(image)).unsqueeze(0)
             input = to_tensor(image).unsqueeze(0)
+            eventlet.sleep(0)
             if args.half:
                 input = input.half()
             ticks = time.time()
@@ -277,6 +282,7 @@ def main():
                 prediction = sliding_predict(model, input, num_classes)
             else:
                 prediction = model(input.to(device))
+                eventlet.sleep(0)
                 Total_Inference_Time += time.time()-ticks
                 if config['arch']['type'][:2] == 'IC':
                     prediction = prediction[0]
@@ -292,10 +298,12 @@ def main():
                 else:
                     prediction = prediction.squeeze(0).cpu().numpy()
 
+            eventlet.sleep(0)
             prediction = F.softmax(torch.from_numpy(
                 prediction), dim=0).argmax(0).cpu().numpy()
             save_images(image, prediction, args.output,
                         img_file, palette, original_size)
+            eventlet.sleep(0)
 
         print("time used: {}".format(Total_Inference_Time))
 
@@ -358,7 +366,7 @@ def normal_process(trays, model='HRNet', backref=False):
             model = model.half()
         models[ue] = model
 
-    output_dir = os.path.join(root, args['output'])
+    output_dir = os.path.join(output_root, args['output'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -383,8 +391,14 @@ def normal_process(trays, model='HRNet', backref=False):
                 model = models["eaten"]
             else:
                 model = models["uneaten"]
+            
+            try:
+                image = Image.open(img_file.path).convert('RGB')
+            except:
+                print("ERROR IN SEG!!!!!!")
+                yield (img_file, output) if backref else output
+                continue
 
-            image = Image.open(img_file.path).convert('RGB')
             original_size = image.size
 
             if base_size:
@@ -392,18 +406,17 @@ def normal_process(trays, model='HRNet', backref=False):
                     size=(base_size, base_size), resample=Image.BILINEAR)
 
             #input = normalize(to_tensor(image)).unsqueeze(0)
+            ticks = time.time()
             input = to_tensor(image).unsqueeze(0)
             if args['half']:
-                input = input.half()
-            ticks = time.time()
+                input = input.half()            
             if args['mode'] == 'multiscale':
                 prediction = multi_scale_predict(
                     model, input, scales, num_classes, device)
             elif args['mode'] == 'sliding':
                 prediction = sliding_predict(model, input, num_classes)
             else:
-                prediction = model(input.to(device))
-                output["infer_time"] = time.time()-ticks
+                prediction = model(input.to(device))                
                 Total_Inference_Time += output["infer_time"]
                 if config['arch']['type'] == 'IC':
                     prediction = prediction[0]
@@ -421,6 +434,7 @@ def normal_process(trays, model='HRNet', backref=False):
 
             prediction = F.softmax(torch.from_numpy(
                 prediction), dim=0).argmax(0).cpu().numpy()
+            output["infer_time"] = time.time()-ticks
 
             save_images(image, prediction, output_dir,
                         img_file.path, pal, original_size, output)
@@ -433,14 +447,18 @@ def normal_process(trays, model='HRNet', backref=False):
 def trt_process(trays, backref=False):
 
     root = os.path.dirname(__file__)
-    output_dir = os.path.join(root, 'outputs')
+    output_dir = os.path.join(output_root, 'outputs')
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
     total_trays = trays.count()
+    base_size = 512
+    to_tensor = transforms.ToTensor()
+    pal = palette.COCO_palette
 
-    uneaten_trays = trays.filter_by(eaten = False).all()    
-    with open("fp16_uneaten_model.engine", 'rb') as f, trt.Runtime(trt.Logger(trt.Logger.ERROR)) as runtime, torch.no_grad():
+    uneaten_trays = trays.filter_by(eaten = False).all()
+    num_classes = 4    
+    with open("/home/ubuntu/FYPSeg/fp16_uneaten_model.engine", 'rb') as f, trt.Runtime(trt.Logger(trt.Logger.ERROR)) as runtime, torch.no_grad():
 
         engine = runtime.deserialize_cuda_engine(f.read())
         inputs, outputs, bindings, stream = allocate_buffers(
@@ -469,10 +487,16 @@ def trt_process(trays, backref=False):
                 }
 
                 total_image += 1
-                image = Image.open(img_file.path).convert('RGB')
+                try:
+                    image = Image.open(img_file.path).convert('RGB')
+                except:
+                    print("ERROR IN SEG!!!!!!")
+                    yield (img_file, output) if backref else output
+                    continue
+
                 original_size = image.size
 
-                image_name = os.path.basename(img_file)                
+                image_name = os.path.basename(img_file.path)                
 
                 if base_size:
                     image = image.resize(
@@ -502,7 +526,8 @@ def trt_process(trays, backref=False):
 
     eaten_trays = trays.filter_by(eaten = True).all()
     num_uneaten_trays = len(uneaten_trays)
-    with open("fp16_eaten_model.engine", 'rb') as f, trt.Runtime(trt.Logger(trt.Logger.ERROR)) as runtime, torch.no_grad():
+    num_classes = 5
+    with open("/home/ubuntu/FYPSeg/fp16_eaten_model.engine", 'rb') as f, trt.Runtime(trt.Logger(trt.Logger.ERROR)) as runtime, torch.no_grad():
 
         engine = runtime.deserialize_cuda_engine(f.read())
         inputs, outputs, bindings, stream = allocate_buffers(
@@ -516,6 +541,7 @@ def trt_process(trays, backref=False):
             Total_Inference_Time = 0
 
             for c, img_file in enumerate(tbar):
+                eventlet.sleep(0)
 
                 output = {
                     "mask": None,
@@ -531,33 +557,44 @@ def trt_process(trays, backref=False):
                 }
 
                 total_image += 1
-                image = Image.open(img_file.path).convert('RGB')
+                try:
+                    image = Image.open(img_file.path).convert('RGB')
+                except:
+                    print("ERROR IN SEG!!!!!!")
+                    yield (img_file, output) if backref else output
+                    continue
+
                 original_size = image.size
 
-                image_name = os.path.basename(img_file)                
+                image_name = os.path.basename(img_file.path)                
 
                 if base_size:
                     image = image.resize(
                         size=(base_size, base_size), resample=Image.BILINEAR)                    
 
                 ticks = time.time()
+                eventlet.sleep(0)
                 input = to_tensor(image).unsqueeze(0)
                 trt_input_image = to_numpy(input)
                 inputs[0].host = trt_input_image.reshape(-1)
+                eventlet.sleep(0)
                 trt_outputs = do_inference(
                     context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
                 trt_feat = postprocess_the_outputs(
                     trt_outputs[0], shape_of_output)
+                eventlet.sleep(0)
                 trt_prediction = F.interpolate(torch.from_numpy(trt_feat), size=(
                     512, 512), mode='bilinear', align_corners=True)
                 trt_prediction = trt_prediction.squeeze(0).cpu().numpy()
                 trt_prediction = F.softmax(torch.from_numpy(
                     trt_prediction), dim=0).argmax(0).cpu().numpy()
+                eventlet.sleep(0)
                 
                 output["infer_time"] = time.time()-ticks
                 Total_Inference_Time += output["infer_time"]
 
                 save_images(image, trt_prediction, output_dir, img_file.path, pal, original_size, output)
+                eventlet.sleep(0)
                 yield (img_file, output) if backref else output
 
             print("time used: {}".format(Total_Inference_Time))

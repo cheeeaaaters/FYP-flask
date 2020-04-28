@@ -26,7 +26,8 @@ var segmentation_socket = io('/segmentation_step');
 
         options = {
             hrnet: $("#hrnet"),
-            bisenet: $("#bisenet")
+            bisenet: $("#bisenet"),
+            tensorrt: $("#tensorrt")
         }
 
         for(const model in options){
