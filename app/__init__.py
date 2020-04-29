@@ -22,6 +22,21 @@ db = SQLAlchemy(app)
 #db.metadata.clear()
 #db.create_all()
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker()
+
+engine = create_engine('sqlite:///' + os.path.join(basedir, 'app.db'), echo=True, pool_threadlocal=True)
+connection = engine.connect()
+
+engine2 = create_engine('sqlite:///' + os.path.join(basedir, 'app2.db'), echo=True, pool_threadlocal=True)
+connection2 = engine2.connect()
+
+session = Session(bind=connection)
+session2 = Session(bind=connection2)
+
+'''
 from app import socketio_helper
 from app import DBModels
 from app import Step
@@ -39,5 +54,8 @@ socketio_helper.add_socketio()
 from app import UIManager
 from app import test
 
+from app import input_ocr
+
 print("hi")
 #exit()
+'''

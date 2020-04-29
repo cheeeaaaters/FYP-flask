@@ -33,7 +33,7 @@ def send_file(
 
     if isinstance(filename_or_fp, str):
         filename = filename_or_fp
-        filename = '/' + filename
+        #filename = '/' + filename
         #if not os.path.isabs(filename):
             #filename = os.path.join(current_app.root_path, filename)
         file = None
@@ -170,3 +170,6 @@ def get_images(filename):
     elif t == 'png':
         return send_file(filename_or_fp=p, mimetype="image/png")
 
+@app.route('/ocr')
+def ocr():
+    return render_template('input_ocr.html')

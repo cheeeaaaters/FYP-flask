@@ -1,0 +1,25 @@
+.vwrap {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+}
+
+.hwrap{
+    display: flex;
+    flex-direction: row;
+}
+
+#gallery_container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.gallery{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.active{
+    outline: 10px solid red;
+}
