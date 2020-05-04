@@ -180,7 +180,7 @@ def save_images(image, mask, output_path, image_file, palette, original_size, ou
         pc_1 = int(np.count_nonzero(resize_mask == 1))
         pc_2 = int(np.count_nonzero(resize_mask == 2))
         pc_3 = int(np.count_nonzero(resize_mask == 3))
-        pc_4 = int(np.count_nonzero(resize_mask == 3))
+        pc_4 = int(np.count_nonzero(resize_mask == 4))
         #pc_total = pc_0 + pc_1 + pc_2 + pc_3
         output["pc_0"] = pc_0
         output["pc_1"] = pc_1
@@ -188,6 +188,11 @@ def save_images(image, mask, output_path, image_file, palette, original_size, ou
         output["pc_3"] = pc_3
         output["pc_4"] = pc_4
         output["pc_total"] = w * h
+
+    parts = image_file.split('/')
+    output_path = os.path.join(output_path, parts[-4], parts[-3], parts[-2])
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     image_file = os.path.basename(image_file).split('.')[0]
     colorized_mask = colorize_mask(mask, palette)

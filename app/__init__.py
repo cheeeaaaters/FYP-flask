@@ -22,6 +22,7 @@ db = SQLAlchemy(app)
 #db.metadata.clear()
 #db.create_all()
 
+'''
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -58,4 +59,3 @@ from app import input_ocr
 
 print("hi")
 #exit()
-'''

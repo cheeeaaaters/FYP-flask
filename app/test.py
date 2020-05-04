@@ -6,6 +6,7 @@ from werkzeug.datastructures import Headers
 from werkzeug.wsgi import wrap_file
 from time import time
 from zlib import adler32
+from app.DBModels import *
 
 @app.route('/')
 def index():
@@ -33,7 +34,7 @@ def send_file(
 
     if isinstance(filename_or_fp, str):
         filename = filename_or_fp
-        #filename = '/' + filename
+        filename = '/' + filename
         #if not os.path.isabs(filename):
             #filename = os.path.join(current_app.root_path, filename)
         file = None
@@ -160,15 +161,43 @@ def image():
 
 @app.route('/my_images/<path:filename>')
 def get_images(filename):
-    #p = MyPath("/home/ubuntu/FYP-flask/food_.jpg")
     t = filename.split(".")[-1]
-    p = Path(filename)
-    print(p)
-    #print(t, p)
+    #print(t, filename)   
     if t == 'jpg':
-        return send_file(filename_or_fp=p, mimetype="image/jpeg")
+        return send_file(filename_or_fp=filename, mimetype="image/jpeg")
     elif t == 'png':
-        return send_file(filename_or_fp=p, mimetype="image/png")
+        return send_file(filename_or_fp=filename, mimetype="image/png")
+
+@app.route('/details/<path:filename>')
+def get_details(filename):
+    filename = '/' + filename
+    t = Tray.query.filter(Tray.path == filename).first()
+    if t != None:    
+        obj = {
+            'video': t.video.path,
+            'path': t.path,
+            'object_id': t.object_id,
+            'ocr': t.ocr,
+            'eaten': t.eaten,
+            'dish': t.dish,
+            'area': t.area,
+            'date_time': t.date_time,             
+        }
+        if t.segmentation_info != None:
+            obj['seg'] = True
+            obj['seg_path'] = t.segmentation_info.segmentation_path
+            obj['seg_total'] = t.segmentation_info.total
+            obj['seg_rice'] = t.segmentation_info.rice
+            obj['seg_vegetable'] = t.segmentation_info.vegetable
+            obj['seg_meat'] = t.segmentation_info.meat
+            obj['seg_other'] = t.segmentation_info.other
+        if t.multilabel_info != None:
+            obj['ml'] = True
+            obj['ml_rice'] = t.multilabel_info.rice
+            obj['ml_vegetable'] = t.multilabel_info.vegetable
+            obj['ml_meat'] = t.multilabel_info.meat
+        return jsonify(obj)
+    return jsonify(None)
 
 @app.route('/ocr')
 def ocr():

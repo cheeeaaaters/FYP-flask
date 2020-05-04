@@ -22,12 +22,17 @@ class PairStep(Step):
 
     def dp(self, intervals, labels):
 
+        def is_return_area(area):
+            return (area == 'main_return_area') or (area == 'side_return_area') or (area == 'side_return_area_2')
+
         def dish(interval):
-            counter = Counter([i.dish for i in interval])            
-            return counter.most_common(1)[0]
+            counter = Counter([i.dish for i in interval])
+            if len(counter.most_common(1)) > 0:
+            	return counter.most_common(1)[0][0]
+            return None
 
         def area(interval):
-            num_return_area = sum(i.area == 'return_area' for i in interval)
+            num_return_area = sum(is_return_area(i.area) for i in interval)
             num_non_return_area = len(interval) - num_return_area            
             return 'return_area' if num_return_area > num_non_return_area else 'non_return_area'
 
@@ -42,13 +47,15 @@ class PairStep(Step):
             check1 = (not self.state[0]) or (labels[k2] == 'E' and labels[k1] == 'U')
             diff_time = avg_time(intervals[k2])-avg_time(intervals[k1])
             #print(check1)
-            check2 = check1 and (self.eat_min <= diff_time <= self.eat_max)
+            check2 = check1 #and (self.eat_min <= diff_time) and (diff_time <= self.eat_max)
             #print(check2)
             check3 = check2 and ((not self.state[1]) or ((area(intervals[k2]) == 'return_area') and (
                 area(intervals[k1]) == 'non_return_area')))
             #print(check3)
             check4 = check3 and ((not self.state[2]) or (
                 dish(intervals[k2]) == dish(intervals[k1])))
+            if not check4:
+                print(dish(intervals[k2]), dish(intervals[k1]))
             #print(check4)
             return check4
 
@@ -78,10 +85,11 @@ class PairStep(Step):
                 pairs.append((cur, p))
                 cur = p+1
 
-        print(pairs)
+        #print(pairs)
         return pairs
 
     def step_process(self):
+        self.clean_up()
         print("Start Process...")
 
         # get the inputs
@@ -116,6 +124,8 @@ class PairStep(Step):
                         last_interval.append(tray)
                     else:
                         intervals.append([tray])
+            #if(same_ocr[0].ocr == '0006'):
+                #print(intervals)
 
             labels = []
             for interval in intervals:
@@ -123,10 +133,10 @@ class PairStep(Step):
                 num_uneaten = len(interval) - num_eaten
                 labels.append('E' if num_eaten > num_uneaten else 'U')
 
-            # print(intervals)
-            # print(labels)
+            #print(intervals)
+            #print(labels)
 
-            interval_pairs = self.dp(intervals, labels, self.state)
+            interval_pairs = self.dp(intervals, labels)
 
             def max_pixel(interval):
                 i, max = (0, 0)
@@ -140,13 +150,15 @@ class PairStep(Step):
             for (U, E) in interval_pairs:
                 i = max_pixel(intervals[U])
                 j = max_pixel(intervals[E])
-                pair = Pair(ocr=ocr, before_tray=intervals[U][i], after_tray=intervals[E][j])
+                pair = Pair(ocr=intervals[U][i].ocr, before_tray=intervals[U][i], after_tray=intervals[E][j])
                 #print(intervals[U][i].segmentation_info.total, intervals[E][j].segmentation_info.total)
                 db.session.add(pair)
                 db.session.commit()
                 #print(pair.before_tray.segmentation_info.total, pair.after_tray.segmentation_info.total)
-                print(pair.before_tray)
-                print(pair.after_tray)
+                #print(pair.before_tray)
+                #print(pair.after_tray)
+
+        self.started = False
 
         from app.UIManager import main_content_manager
         main_content_manager.switch_to_step(globs.step_objects['MultiLabelStep'])
@@ -160,7 +172,7 @@ class PairStep(Step):
         else:
             from app.UIManager import modal_manager
             modal_manager.show(render_template('step_modal.html', 
-                num=Tray.query.filter((Tray.pair_before == None) & (Tray.pair_after == None)).count()))
+                num=Tray.query.filter(Tray.ocr != None,Tray.eaten != None,Tray.segmentation_info != None).count()))
         
     # If you wish to add something to stop...
     def stop(self):
@@ -178,6 +190,12 @@ class PairStep(Step):
 
     def requested_sidebar(self):
         emit('init_sb', namespace='/pair_step')
+        self.eat_min = timedelta(minutes=10)
+        self.eat_max = timedelta(minutes=60)
+
+    def clean_up(self):
+        Pair.query.delete()
+        db.session.commit()
 
     @bind_socketio('/pair_step')
     def change_state(self, state):

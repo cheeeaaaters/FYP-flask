@@ -17,23 +17,111 @@
         src="{{url_for('static', filename='javascripts/d3.min.js')}}"></script>
 <script type="text/javascript"
         src="{{url_for('static', filename='javascripts/input_ocr.js')}}"></script>
+<script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
 {% endblock %}
 
 {% block content %}
+
+<div class="modal">
+    <div class="modal_content">
+        <div class="cross_container">
+            <a style="cursor:pointer;" id="cross_button">X</a>
+        </div>    
+        <p><b>video path: </b><span id='video'></span></p>
+        <p><b>tray path: </b><span id='path'></span></p>
+        <p><b>object id: </b><span id='object_id'></span></p>
+        <p><b>ocr: </b><span id='ocr'></span></p>
+        <p><b>eaten: </b><span id='eaten'></span></p>
+        <p><b>dish: </b><span id='dish'></span></p>
+        <p><b>area: </b><span id='area'></span></p>
+        <p><b>date time: </b><span id='date_time'></span></p>    
+        <p><b>mask: </b><span id='seg_path'></span></p>
+        <p><b>total pixel: </b><span id='seg_total'></span></p>
+        <p><b>rice pixel: </b><span id='seg_rice'></span></p>
+        <p><b>vegetable pixel: </b><span id='seg_vegetable'></span></p>
+        <p><b>meat pixel: </b><span id='seg_meat'></span></p>
+        <p><b>other pixel: </b><span id='seg_other'></span></p>      
+        <p><b>multilabel rice: </b><span id='ml_rice'></span></p>
+        <p><b>multilabel vegetable: </b><span id='ml_vegetable'></span></p>
+        <p><b>multilabel meat: </b><span id='ml_meat'></span></p>        
+    </div>
+</div>
 
 <div class='hwrap'>
 
     <div class='vwrap'>
 
-    <select id="sel_area" onchange="change_area()">
+    <select id="sel_area" onchange="change_area()">        
         <option value="bbq">bbq</option>
         <option value="teppanyaki">teppanyaki</option>
-        <option value="main_return_area">main_return_area</option>    
+        <option value="delicacies">delicacies</option>
+        <option value="choices">choices</option> 
+        <option value="japanese">japanese</option>       
+        <option value="main_return_area">main_return_area</option>        
     </select>
 
     <select id="sel_video" multiple="multiple" onchange="change_video()" size="20">   
     </select>
 
+    <select id="sel_eaten" onchange="change_eaten()">
+        <option value="all">all</option>
+        <option value="eaten">eaten</option>     
+        <option value="uneaten">uneaten</option> 
+    </select>
+
+    <select id="sel_dish" onchange="change_dish()">
+        <option value="all">all</option>
+        <option value="bbq">bbq</option>     
+        <option value="teppanyaki">teppanyaki</option> 
+        <option value="two_choices">two_choices</option>     
+        <option value="japanese">japanese</option>   
+        <option value="delicacies">delicacies</option>        
+    </select>
+
+    <div class='hwrap'>
+        <select id="sel_rice" onchange="change_rice()" style="width: 60px">
+            <option value="all">all</option>
+            <option value=0>0</option>
+            <option value=1>1</option>     
+            <option value=2>2</option>                     
+        </select>
+        <select id="sel_vegetable" onchange="change_vegetable()" style="width: 60px">
+            <option value="all">all</option>
+            <option value=0>0</option>
+            <option value=1>1</option>     
+            <option value=2>2</option>     
+        </select>
+        <select id="sel_meat" onchange="change_meat()" style="width: 60px">
+            <option value="all">all</option>
+            <option value=0>0</option>
+            <option value=1>1</option>     
+            <option value=2>2</option>          
+        </select>
+    </div>
+
+    <select id="sel_mode" onchange="change_mode()">
+        <option value="ocr">ocr</option>
+        <option value="eaten">eaten uneaten</option>     
+        <option value="dish">dish</option> 
+        <option value="seg">segmentation</option>     
+        <option value="pair">pair</option>   
+        <option value="multilabel">multilabel</option>        
+    </select>
+
+    <label for="low">From: </label>
+    <input type="text" id="low">
+    <label for="high">To: </label>
+    <input type="text" id="high">
+    <div class="center_wrapper">
+    	<input type="checkbox" id="random">
+    	<label for="random">random</label>
+    </div>
+    <div class="center_wrapper">
+        <input type="checkbox" id="all_area">
+    	<label for="all_area">all area</label>
+    </div>
     <button onclick="filter()">
         Filter
     </button>
