@@ -6,6 +6,7 @@ import sys, os
 from app import globs
 from app.DBModels import *
 import eventlet
+import time
 
 path_to_multi_classifier = '/home/ubuntu/multilabel'
 sys.path.insert(1, path_to_multi_classifier)
@@ -54,24 +55,30 @@ class MultiLabelStep(Step):
         #outputStream = Classifier.process(input_pairs, backref=True)
         outputStream = Classifier.process(input_trays, backref=True)
 
-        fo = open("multilabel_result.txt", "a")
-
         start_time = time.time()
         for (input, info) in outputStream:
 
-            fo.write("path: %s\n" % input.path)
             rice = 0 if info['rice_preds'] == None else info['rice_preds'][0].item()
             vegetable = 0 if info['vegetable_preds'] == None else info['vegetable_preds'][0].item()
-            meat = 0 if info['meat_preds'] == None else info['meat_preds'][0].item()
-            fo.write("label: %d %d %d" % (rice, vegetable, meat)) 
+            meat = 0 if info['meat_preds'] == None else info['meat_preds'][0].item()             
             eventlet.sleep(0)
+            ml = MultiLabelInfo(rice=rice, vegetable=vegetable, meat=meat)
+            input.multilabel_info = ml
+            db.session.add(ml)
+            db.session.commit()
+            
+            json = {}
+            json["percentage"] = info["percentage"]
+            json["path"] = input.path
+            json["infer_time"] = info['rice_infer_time'] + info['vegetable_infer_time'] + info['meat_infer_time']
+            json["label"]= [rice, vegetable, meat]
+            emit('display', json, namespace='/multilabel_step')
           
             print("One Loop Pass")
             #It will wait on this yield statement
             yield
 
         print("ALL: ", time.time() - start_time)
-        fo.close()
         
         '''
         for (input, info) in outputStream:

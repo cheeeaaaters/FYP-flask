@@ -97,7 +97,16 @@
     </a>   
     <a href="#" id="hammer_button">
         <img src="{{url_for('static', filename='icons/hammer.svg')}}"/>    
-    </a>  
+    </a>
+    <div class="db_container">
+        <div class="dropdown">
+            <button class="dropbtn">Database</button>
+            <div class="dropdown-content">
+                <a href="#" id="app" class="active">app.db</a>
+                <a href="#" id="demo">demo.db</a>                             
+            </div>
+        </div>
+    </div>  
 </nav>
 {% endblock %}
 

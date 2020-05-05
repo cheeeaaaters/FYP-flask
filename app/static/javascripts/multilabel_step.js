@@ -4,13 +4,13 @@ var multilabel_socket = io('/multilabel_step');
 
     var multilabel_progess_bar;
     var multilabel_infer_time_chart;
-    var pair_gallery;
+    var gallery;
 
     var i = 1;
 
     multilabel_socket.on('display', function (tray) {
         multilabel_progess_bar.update(tray.percentage * 100)
-        pair_gallery.append(tray)
+        gallery.append(tray)
         multilabel_infer_time_chart.add({ x: i, y: tray.infer_time })
         i += 1;
     });
@@ -48,7 +48,7 @@ var multilabel_socket = io('/multilabel_step');
             multilabel_tabs.infer_time.removeClass('hidden')
         })
 
-        pair_gallery = multilabel_gallery("#multilabel_classifier_content", [], {
+        gallery = multilabel_gallery("#multilabel_classifier_content", [], {
             absolute_path: true,
             load_more: true
         })        

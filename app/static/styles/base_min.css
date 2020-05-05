@@ -86,6 +86,14 @@ nav img {
   height: 40px; 
 }
 
+.db_container {
+  display: flex;
+  flex-grow: 1;
+  flex-flow: row-reverse;
+  align-items: center;
+  margin-right: 20px;
+}
+
 .modal {
   display: none; 
   position: fixed; 
