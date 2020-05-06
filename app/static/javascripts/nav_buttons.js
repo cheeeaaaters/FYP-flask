@@ -19,6 +19,7 @@ $("#hammer_button").on('click', function() {
 db_options = {
     app: $("#app"),
     demo: $("#demo"),    
+    app_copy: $("#app_copy")
 }
 
 var db_socket = io('/db')

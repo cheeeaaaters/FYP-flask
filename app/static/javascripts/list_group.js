@@ -39,7 +39,9 @@ function list_group(selection, data, callback){
                     if (s[i]) return '#bbf0ca'
                     return 'rgb(245, 245, 245)'
                 })
-        }
+        },
+
+        state: state
 
     }
 

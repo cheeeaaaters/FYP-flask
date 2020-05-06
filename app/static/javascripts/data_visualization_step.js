@@ -158,6 +158,66 @@ function groupBarChart(groups, id, margin, width, color) {
         .call(yAxis);
 }
 
+function barChart(data, id, margin, width, color) {
+
+    var margin = { top: 20, right: 20, bottom: 70, left: 40 },
+        width = 600 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var y = d3.scale.linear().range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .tickFormat(d => {console.log(d); return ""});
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10);
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    x.domain(data.map(function (d) { return d.start; }));
+    y.domain([0, d3.max(data, function (d) { return d.count; })]);
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", "-.55em")
+        .attr("transform", "rotate(-90)");
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Value ($)");
+
+    svg.selectAll("bar")
+        .data(data)
+        .enter().append("rect")
+        .style("fill", "steelblue")
+        .attr("x", function (d) { return x(d.start); })
+        .attr("width", x.rangeBand())
+        .attr("y", function (d) { return y(d.count); })
+        .attr("height", function (d) { return height - y(d.count); });
+
+}
+
 function vslider(selector, handler) {
 
     var gVertical = d3.select(selector)
@@ -185,6 +245,33 @@ function vslider(selector, handler) {
 
 }
 
+function legion(data, selection, color) {
+    var labels = d3.select(selection)
+        .selectAll("g")
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("transform", (d, i) => "translate(0," + 50 * i + ")")
+
+    labels.append("circle")
+        .attr("r", 5)
+        .attr("fill", name => color(name))
+
+    labels.append("text")
+        .attr("transform", "translate(20, 5)")
+        .text(name => name)
+
+    labels.append("line")
+        .attr("class", name => "line_" + name + " panel_line")
+        .attr("transform", "translate(0, 15)")
+        .style("stroke", "rgb(0,0,0,0.15)")
+        .style("stroke-width", 2)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 100)
+        .attr("y2", 0)
+}
+
 function scatterPlot(data, id, width, height) {
 
     data.forEach(d => { d.percent = 100 * d.after / (d.before + 0.00001) })
@@ -195,9 +282,13 @@ function scatterPlot(data, id, width, height) {
         .attr("height", height);
     margin = 40
 
+    xmax = d3.max(data, d => d.after)
+    ymax = d3.max(data, d => d.before)
+    xymax = Math.max(xmax, ymax)
+
     // Add X axis
     var x = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.after)])
+        .domain([0, xymax])
         .range([margin, width - margin]);
 
     svg.append("g")
@@ -206,7 +297,7 @@ function scatterPlot(data, id, width, height) {
 
     // Add Y axis
     var y = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.before)])
+        .domain([0, xymax])
         .range([height - margin, margin]);
 
     svg.append("g")
@@ -217,7 +308,7 @@ function scatterPlot(data, id, width, height) {
     var color = d3.scaleOrdinal()
         .domain(["bbq", "two_choices", "delicacies", "japanese", "teppanyaki", "veggies"])
         .range(["rgb(252,186,3)", "rgb(122,149,255)", "rgb(235,157,252)"
-                ,"rgb(255,127,122)","rgb(248,252,157)", "rgb(131,255,122)"])
+            , "rgb(255,127,122)", "rgb(248,252,157)", "rgb(131,255,122)"])
         .unknown("rgb(219,219,219)")
 
     // Highlight the specie that is hovered
@@ -313,8 +404,8 @@ function scatterPlot(data, id, width, height) {
             .attr("r", 5)
 
         fl = data.filter(d => d.percent <= val)
-        if(fl.length != filtered_list.length) {
-            if(filtered_list_change){
+        if (fl.length != filtered_list.length) {
+            if (filtered_list_change) {
                 filtered_list_change(fl, data)
             }
         }
@@ -323,7 +414,8 @@ function scatterPlot(data, id, width, height) {
 
     return {
         highlight_percent: highlight_percent,
-        set_filtered_list_change: f => {filtered_list_change = f}
+        set_filtered_list_change: f => { filtered_list_change = f },
+        clear: () => { $("#" + id).html("") }
     }
 
 }
@@ -503,11 +595,11 @@ function donut_chart(selector, data) {
     var color = d3.scaleOrdinal()
         .domain(["bbq", "two_choices", "delicacies", "japanese", "teppanyaki", "veggies"])
         .range(["rgb(252,186,3)", "rgb(122,149,255)", "rgb(235,157,252)"
-                ,"rgb(255,127,122)","rgb(248,252,157)", "rgb(131,255,122)"])
+            , "rgb(255,127,122)", "rgb(248,252,157)", "rgb(131,255,122)"])
         .unknown("rgb(219,219,219)")
 
     var pie = d3.pie()
-        .value(function (d) { return d.count; })        
+        .value(function (d) { return d.count; })
 
     var arc = d3.arc()
         .innerRadius(radius - 10)
@@ -529,19 +621,19 @@ function donut_chart(selector, data) {
         .attr("fill", function (d, i) { return color(d.data.name); })
         .attr("d", arc)
         .each(function (d) { this._current = d; }) // store the initial angles
-               
+
     var count_text = svg.datum(data).selectAll("text")
         .data(pie)
         .join("text")
-        .attr("transform", function (d) {            
+        .attr("transform", function (d) {
             return "translate(" + percent.centroid(d) + ")";
         })
         .text(d => d.data.count == 0 ? '' : d.data.count)
         .attr("text-anchor", "middle")
 
-    function change() {        
-        pie.value(function (d) { return d.count; }) 
-        count_text.data(pie).attr("transform", function (d) {            
+    function change() {
+        pie.value(function (d) { return d.count; })
+        count_text.data(pie).attr("transform", function (d) {
             return "translate(" + percent.centroid(d) + ")";
         }).text(d => d.data.count == 0 ? '' : d.data.count)
         path = path.data(pie); // compute the new angles

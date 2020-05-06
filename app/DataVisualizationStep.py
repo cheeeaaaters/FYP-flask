@@ -10,6 +10,7 @@ class DataVisualizationStep(Step):
         super().__init__()
         self.context["step_id"] = 8
         self.context["step_name"] = "data_visualization_step"
+        self.q5_state = [True, False, False, False]
 
     #If you wish to add something to start...
     def start(self): 
@@ -52,8 +53,11 @@ class DataVisualizationStep(Step):
         return (a, b, c, d, e)
 
     @bind_socketio('/data_visualization_step')
-    def q1(self):
-        data = Tray.query.filter((Tray.eaten == False) & (Tray.segmentation_info != None)).all()
+    def q1(self, dish):
+        data = Tray.query.filter(Tray.eaten == False, Tray.segmentation_info != None)
+        if dish != 'all':
+            data = data.filter(Tray.dish == dish)
+        data = data.all()
         counts = [
             { 'type': "rice", 'count': 0},
             { 'type': "vegetable", 'count': 0},
@@ -68,8 +72,11 @@ class DataVisualizationStep(Step):
         return counts        
 
     @bind_socketio('/data_visualization_step')
-    def q1_2(self):
-        data = Tray.query.filter((Tray.eaten == False) & (Tray.segmentation_info != None)).all()
+    def q1_2(self, dish):
+        data = Tray.query.filter((Tray.eaten == False) & (Tray.segmentation_info != None))
+        if dish != 'all':
+            data = data.filter(Tray.dish == dish)
+        data = data.all()
         counts = [
             { 'type': "rice", 'count': 0},
             { 'type': "vegetable", 'count': 0},
@@ -141,8 +148,11 @@ class DataVisualizationStep(Step):
         return counts
 
     @bind_socketio('/data_visualization_step')
-    def q3(self):   
-        data = Tray.query.filter((Tray.eaten == True) & (Tray.segmentation_info != None)).all()
+    def q3(self, dish):   
+        data = Tray.query.filter(Tray.eaten == True, Tray.segmentation_info != None)
+        if dish != 'all':
+            data = data.filter(Tray.dish == dish)
+        data = data.all()
         counts = [
             { 'type': "rice", 'count': 0},
             { 'type': "vegetable", 'count': 0},
@@ -160,8 +170,11 @@ class DataVisualizationStep(Step):
         return counts 
 
     @bind_socketio('/data_visualization_step')
-    def q3_2(self):
-        data = Tray.query.filter((Tray.eaten == True) & (Tray.segmentation_info != None)).all()
+    def q3_2(self, dish):
+        data = Tray.query.filter(Tray.eaten == True, Tray.segmentation_info != None)
+        if dish != 'all':
+            data = data.filter(Tray.dish == dish)
+        data = data.all()
         counts = [
             { 'type': "rice", 'count': 0},
             { 'type': "vegetable", 'count': 0},
@@ -237,18 +250,46 @@ class DataVisualizationStep(Step):
         return counts
 
     @bind_socketio('/data_visualization_step')
-    def q5(self):
-        return [
-            { 'name': 'bbq', 'before': 16, 'after': 4 },
-            { 'name': 'bbq', 'before': 14, 'after': 5 },
-            { 'name': 'bbq', 'before': 12, 'after': 6 },
-            { 'name': 'japanese', 'before': 7, 'after': 4 },
-            { 'name': 'japanese', 'before': 1, 'after': 8 }
-        ]    
+    def q5_change_state(self, state):
+        self.q5_state = state
+        return True
 
     @bind_socketio('/data_visualization_step')
-    def q6(self):
-        data = Tray.query.filter((Tray.eaten == True) & (Tray.multilabel_info != None)).all()
+    def q5(self):
+        l = []
+        for p in Pair.query.all():
+            obj = {
+                'name': p.before_tray.dish                
+            }
+            (a1, b1, c1, d1) = self.get_prop(p.before_tray)
+            (a2, b2, c2, d2) = self.get_prop(p.after_tray)
+            t1 = p.before_tray.segmentation_info.total
+            t2 = p.after_tray.segmentation_info.total
+            if self.q5_state[0]:
+                obj['before'] = 1 - d1
+                obj['after'] = 1 - d2
+            else:
+                obj['before'] = 0
+                obj['after'] = 0
+                if self.q5_state[1]:
+                    obj['before'] += a1
+                    obj['after'] += a2
+                if self.q5_state[2]:
+                    obj['before'] += b1
+                    obj['after'] += b2
+                if self.q5_state[3]:
+                    obj['before'] += c1
+                    obj['after'] += c2
+            l.append(obj)
+
+        return l  
+
+    @bind_socketio('/data_visualization_step')
+    def q6(self, dish):
+        data = Tray.query.filter(Tray.eaten == True, Tray.multilabel_info != None)
+        if dish != 'all':
+            data = data.filter(Tray.dish == dish)
+        data = data.all()
         counts = [
             [
                 { 'name': 'rice: none', 'count': 0 },

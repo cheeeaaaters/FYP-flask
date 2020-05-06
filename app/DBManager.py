@@ -16,8 +16,12 @@ connection = engine.connect()
 engine2 = create_engine('sqlite:///' + os.path.join(db_dir, 'demo.db'), echo=False, pool_threadlocal=True)
 connection2 = engine2.connect()
 
+engine3 = create_engine('sqlite:///' + os.path.join(db_dir, 'app_copy.db'), echo=False, pool_threadlocal=True)
+connection3 = engine3.connect()
+
 session = Session(bind=connection)
 session2 = Session(bind=connection2)
+session3 = Session(bind=connection3)
 
 def r():
     pass
@@ -27,6 +31,8 @@ def switch_db(db_name):
         db.session = session
     elif db_name == 'demo':
         db.session = session2
+    elif db_name == 'app_copy':
+        db.session = session3
     Video.query = db.session.query(Video)
     Tray.query = db.session.query(Tray)
     Pair.query = db.session.query(Pair)

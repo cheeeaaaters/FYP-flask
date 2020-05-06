@@ -25,8 +25,6 @@ def change_video(obj):
         q = Tray.query.filter(Tray.video.has(Video.path.in_(obj['selections'])))
     if obj['mode'] == 'seg':
         q = q.filter(Tray.segmentation_info != None)
-    elif obj['mode'] == 'multilabel':
-        q = q.filter(Tray.multilabel_info != None)
     if obj['dish'] != 'all':
         q = q.filter(Tray.dish == obj['dish'])
     if obj['eaten'] != 'all':
@@ -92,19 +90,57 @@ def change_video(obj):
     elif obj['mode'] == 'multilabel':
         for t in q.all():        
             info = {}
-            info['path'] = t.path 
-            info['rice'] = t.multilabel_info.rice 
-            info['vegetable'] = t.multilabel_info.vegetable   
-            info['meat'] = t.multilabel_info.meat                 
+            info['path'] = t.path
+            if t.multilabel_info == None:
+                info['rice'] = None
+                info['vegetable'] = None   
+                info['meat'] = None
+            else:
+                info['rice'] = t.multilabel_info.rice 
+                info['vegetable'] = t.multilabel_info.vegetable   
+                info['meat'] = t.multilabel_info.meat                 
             l.append(info)
-    '''
-    for t in range(100):
-        info = {}
-        info['path'] = "C:\\Users\\cheee\\Desktop\\UST\\fyp\\git_flask_app\\food_.jpg"      
-        info['ocr'] = "1234"
-        l.append(info)
-    '''
     return l
+
+@socketio.on('count', namespace='/ocr')
+def count(obj):        
+    if obj['all_area']:
+        q = db.session.query(Tray)
+    else:    
+        q = Tray.query.filter(Tray.video.has(Video.path.in_(obj['selections'])))
+    if obj['mode'] == 'seg':
+        q = q.filter(Tray.segmentation_info != None)    
+    if obj['dish'] != 'all':
+        q = q.filter(Tray.dish == obj['dish'])
+    if obj['eaten'] != 'all':
+        obj['eaten'] = obj['eaten'] == 'eaten'
+        q = q.filter(Tray.eaten == obj['eaten'])    
+    if obj['rice'] != 'all':
+        q = q.filter(Tray.multilabel_info != None).filter(Tray.multilabel_info.has(MultiLabelInfo.rice == int(obj['rice'])))
+    if obj['vegetable'] != 'all':
+        q = q.filter(Tray.multilabel_info != None).filter(Tray.multilabel_info.has(MultiLabelInfo.vegetable == int(obj['vegetable'])))
+    if obj['meat'] != 'all':
+        q = q.filter(Tray.multilabel_info != None).filter(Tray.multilabel_info.has(MultiLabelInfo.meat == int(obj['meat'])))
+        
+    if obj['random']:
+        q = q.order_by(func.random())
+
+    if obj['low'] != '' and obj['high'] != '':
+        try:
+            q = q.slice(int(obj['low']), int(obj['high'])) 
+        except:
+            pass   
+    elif obj['low'] == '' and obj['high'] != '':
+        try:
+            q = q.limit(int(obj['high'])) 
+        except:
+            pass
+    elif obj['low'] != '' and obj['high'] == '':
+        try:
+            q = q.offset(int(obj['low'])) 
+        except:
+            pass    
+    return q.count()
         
 @socketio.on('submit', namespace='/ocr')
 def submit(ocr_map, mode): 

@@ -11,6 +11,61 @@ def process(trays, backref=False):
 
     root = os.path.dirname(__file__)
 
+    classifiers = {
+        'rice': None,
+        'vegetable': None,
+        'meat': None
+    }
+
+    ds_trans = transforms.Compose([transforms.Scale((256,256)),                               
+                               transforms.ToTensor()
+                               #,normalize
+                               ])
+
+    for foodtype in classifiers:
+        classifiers[foodtype] = models.resnext101_32x8d(pretrained=True)
+        num_ftrs = classifiers[foodtype].fc.in_features
+        classifiers[foodtype].fc = torch.nn.Linear(num_ftrs, 3)
+        classifiers[foodtype] = classifiers[foodtype].cuda()
+        print(foodtype+".pth")
+        load_path = os.path.join(root, foodtype+".pth")
+        classifiers[foodtype].load_state_dict(torch.load(load_path))
+        classifiers[foodtype].train(False)
+        classifiers[foodtype].eval()
+
+    for i, tray in enumerate(trays):
+
+        output = {
+            "rice_preds": None,
+            "vegetable_preds": None,
+            "meat_preds": None,            
+            "rice_infer_time": 0,
+            "vegetable_infer_time": 0,
+            "meat_infer_time": 0,            
+            "percentage": 0
+        }
+
+        try:
+            image_before = Image.open(tray.path)
+        except:
+            print("ERROR IN MULTILABEL!!!")
+            yield (tray, output) if backref else output
+            continue 
+
+        image = ds_trans(image_before)
+        image = torch.unsqueeze(image, dim=0)
+        for foodtype, volume_net in classifiers.items():            
+            time_start = time.time()
+            outputs = volume_net(image.cuda())
+            _, preds = torch.max(outputs.data, 1)
+            output[foodtype + "_infer_time"] = time.time() - time_start
+            output[foodtype + "_preds"] = preds
+
+        yield (tray, output) if backref else output 
+
+    '''
+    root = os.path.dirname(__file__)
+
     dishes = {"BBQ":{"rice":0,"vegetable":0,"meat":0},
     		  "Japan":{"rice":0},
     		  "Teppan":{"rice":0,"vegetable":0,"meat":0},
@@ -74,7 +129,7 @@ def process(trays, backref=False):
             output[foodtype + "_preds"] = preds
 
         yield (tray, output) if backref else output 
-
+    '''
     '''
     for i, pair in enumerate(pairs):
 

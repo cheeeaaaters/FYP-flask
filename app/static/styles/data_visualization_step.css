@@ -46,7 +46,15 @@
 .pc_wrapper{
    margin-top: 20px; 
    display: flex;
-   justify-content: space-around;
+   justify-content: space-around;   
+}
+
+.middle_wrapper{
+    display: flex;
+    flex-direction: column;
+    max-width: 120px;
+    height: 400px;
+    justify-content: space-around;
 }
 
 .pc_title{

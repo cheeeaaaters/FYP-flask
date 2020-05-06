@@ -451,7 +451,7 @@ function filter() {
                     .attr("class", "tag")
         
                 before_tag.selectAll("rect")
-                    .data(d => [d.rice, d.vegetable, d.meat])
+                    .data(d => [d.rice, d.vegetable, d.meat].filter(e => e != null))
                     .join("rect")
                     .attr("x", (d, i) => rect_width * i)
                     .attr("y", d => rect_height * (2 - d))
@@ -506,6 +506,24 @@ function filter() {
         }
     })
     ocr = {}
+}
+
+function count() {
+    my_socket.emit('count', {
+        selections,
+        eaten,
+        dish,
+        rice,
+        vegetable,
+        meat,
+        low: document.getElementById("low").value,
+        high: document.getElementById("high").value,
+        random: document.getElementById("random").checked,
+        all_area: document.getElementById("all_area").checked,
+        mode
+    }, (num) => {
+        alert(num)
+    })
 }
 
 function submit() {

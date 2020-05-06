@@ -45,14 +45,17 @@ var data_visualization_socket = io('/data_visualization_step');
         { name: 'japanese', before: 1, after: 8 }
     ]    
 
+    
     var data_3 = [
-        { name: 'bbq', count: 2 },
-        { name: 'japanese', count: 3 },
-        { name: 'delicacies', count: 4 }
+        { name: 'bbq', count: 1 },
+        { name: 'japanese', count: 1 },
+        { name: 'delicacies', count: 1 },
+        { name: 'two_choices', count: 1 },
+        { name: 'teppanyaki', count: 1 },
+        { name: 'null', count: 1 },
     ]
-
-    var vs, sp, dc;
-    var flag = false;
+    
+    var vs, sp, dc;    
     var dv_list_group;
     var lg_data = [
         'All',
@@ -65,7 +68,27 @@ var data_visualization_socket = io('/data_visualization_step');
 
         vs = vslider("#sp_slider")
         dv_list_group = list_group('#dv_list_group', lg_data, (state) => {
-            data_visualization_socket.emit('q5_change_state', state)
+            data_visualization_socket.emit('q5_change_state', state, () => {
+                data_visualization_socket.emit('q5', (data) => {
+                    $("#p_1").empty()
+                    $("#donut_1").empty()
+                    console.log(data)                    
+                    sp = scatterPlot(data, "p_1", 600, 600)                   
+                    dc = donut_chart("#donut_1", data_3)
+                    sp.set_filtered_list_change((fl) => {
+                        data_3.forEach(d => d.count = 0)
+                        fl.forEach(d => {
+                            data_3.forEach(dd => {
+                                if(d.name == dd.name){
+                                    dd.count += 1
+                                }
+                            })
+                        })                    
+                        dc.update(data_3)
+                    })         
+                    vs.set_handler(sp.highlight_percent)                      
+                })    
+            })
         })
         dv_list_group.initState([true, false, false, false])
 
@@ -99,6 +122,8 @@ var data_visualization_socket = io('/data_visualization_step');
             }
         })
 
+        var q1_drawn, q1_2_drawn = false;
+
         $("#data_visualization_q1").on('click', () => {
             for (const key in data_visualization_tabs) {
                 data_visualization_tabs[key].addClass('hidden')
@@ -107,12 +132,41 @@ var data_visualization_socket = io('/data_visualization_step');
             for (const key in data_visualization_sb) {
                 data_visualization_sb[key].addClass('hidden')
             }
-            data_visualization_socket.emit('q1', (data) => {
-                pieChart(data, "np_1", 400, 400, color)
+            data_visualization_socket.emit('q1', 'all', (data) => {
+                if(!q1_drawn)
+                    pieChart(data, "np_1", 400, 400, color)
+                q1_drawn = true
             })  
-            data_visualization_socket.emit('q1_2', (data) => {
-                pieChart(data, "np_1_2", 400, 400, color)
-            })          
+            data_visualization_socket.emit('q1_2', 'all', (data) => {
+                if(!q1_2_drawn)
+                    pieChart(data, "np_1_2", 400, 400, color)
+                q1_2_drawn = true
+            })
+            legion(["rice", "vegetable", "meat", "background"], "#q1_legion", color)
+            options = {
+                all: $("#data_visualization_q1_content #all"),
+                bbq: $("#data_visualization_q1_content #bbq"),
+                japanese: $("#data_visualization_q1_content #japanese"),
+                two_choices: $("#data_visualization_q1_content #two_choices"),
+                teppanyaki: $("#data_visualization_q1_content #teppanyaki"),
+                delicacies: $("#data_visualization_q1_content #delicacies")
+            }
+            for(const dish in options){
+                options[dish].on('click', () => {
+                    for(const key in options){
+                        options[key].removeClass('active')
+                    }
+                    options[dish].addClass('active')
+                    data_visualization_socket.emit('q1', dish, (data) => {
+                        $("#np_1").empty()
+                        pieChart(data, "np_1", 400, 400, color)
+                    }) 
+                    data_visualization_socket.emit('q1_2', dish, (data) => {
+                        $("#np_1_2").empty()
+                        pieChart(data, "np_1_2", 400, 400, color)
+                    }) 
+                })
+            }          
         })
 
         $("#data_visualization_q2").on('click', () => {
@@ -131,6 +185,8 @@ var data_visualization_socket = io('/data_visualization_step');
             })                            
         })
 
+        var q3_drawn, q3_2_drawn = false;
+
         $("#data_visualization_q3").on('click', () => {
             for (const key in data_visualization_tabs) {
                 data_visualization_tabs[key].addClass('hidden')
@@ -139,12 +195,41 @@ var data_visualization_socket = io('/data_visualization_step');
             for (const key in data_visualization_sb) {
                 data_visualization_sb[key].addClass('hidden')
             }
-            data_visualization_socket.emit('q3', (data) => {
-                pieChart(data, "np_3", 400, 400, color_2)
+            data_visualization_socket.emit('q3', 'all', (data) => {
+                if (!q3_drawn)
+                    pieChart(data, "np_3", 400, 400, color_2)
+                q3_drawn = true
             })  
-            data_visualization_socket.emit('q3_2', (data) => {
-                pieChart(data, "np_3_2", 400, 400, color_2)
-            })   
+            data_visualization_socket.emit('q3_2', 'all', (data) => {
+                if (!q3_2_drawn)
+                    pieChart(data, "np_3_2", 400, 400, color_2)
+                q3_2_drawn = true
+            })
+            legion(["rice", "vegetable", "meat", "other", "background"], "#q3_legion", color_2)
+            options = {
+                all: $("#data_visualization_q3_content #all"),
+                bbq: $("#data_visualization_q3_content #bbq"),
+                japanese: $("#data_visualization_q3_content #japanese"),
+                two_choices: $("#data_visualization_q3_content #two_choices"),
+                teppanyaki: $("#data_visualization_q3_content #teppanyaki"),
+                delicacies: $("#data_visualization_q3_content #delicacies")
+            }
+            for(const dish in options){
+                options[dish].on('click', () => {
+                    for(const key in options){
+                        options[key].removeClass('active')
+                    }
+                    options[dish].addClass('active')
+                    data_visualization_socket.emit('q3', dish, (data) => {
+                        $("#np_3").empty()
+                        pieChart(data, "np_3", 400, 400, color_2)
+                    }) 
+                    data_visualization_socket.emit('q3_2', dish, (data) => {
+                        $("#np_3_2").empty()
+                        pieChart(data, "np_3_2", 400, 400, color_2)
+                    }) 
+                })
+            }               
         })
 
         $("#data_visualization_q4").on('click', () => {
@@ -160,7 +245,7 @@ var data_visualization_socket = io('/data_visualization_step');
             })  
             data_visualization_socket.emit('q4_2', (data) => {
                 stackBarChart(data, "np_4_2", margin, 800, color_2)
-            })     
+            })               
         })
 
         $("#data_visualization_q5").on('click', () => {
@@ -173,10 +258,10 @@ var data_visualization_socket = io('/data_visualization_step');
             }
             data_visualization_sb.q5.removeClass('hidden')
             data_visualization_socket.emit('q5', (data) => {
-                if(!sp || flag)
-                    sp = scatterPlot(data, "p_1", 600, 600) 
-                if(!dc || flag)      
-                    dc = donut_chart("#donut_1", data_3)
+                $("#p_1").empty()
+                $("#donut_1").empty()
+                sp = scatterPlot(data, "p_1", 600, 600)                   
+                dc = donut_chart("#donut_1", data_3)
                 sp.set_filtered_list_change((fl) => {
                     data_3.forEach(d => d.count = 0)
                     fl.forEach(d => {
@@ -188,10 +273,11 @@ var data_visualization_socket = io('/data_visualization_step');
                     })                    
                     dc.update(data_3)
                 })         
-                vs.set_handler(sp.highlight_percent)       
-                flag = false        
+                vs.set_handler(sp.highlight_percent)      
             })               
         })
+
+        var q6_drawn = false
 
         $("#data_visualization_q6").on('click', () => {
             for (const key in data_visualization_tabs) {
@@ -201,9 +287,31 @@ var data_visualization_socket = io('/data_visualization_step');
             for (const key in data_visualization_sb) {
                 data_visualization_sb[key].addClass('hidden')
             }            
-            data_visualization_socket.emit('q6', (data) => {
-                groupBarChart(data, "p_2", margin2, 1000, color)
-            })                             
+            data_visualization_socket.emit('q6', 'all', (data) => {
+                if(!q6_drawn)
+                    groupBarChart(data, "p_2", margin2, 900, color)
+                q6_drawn = true
+            })
+            options = {
+                all: $("#data_visualization_q6_content #all"),
+                bbq: $("#data_visualization_q6_content #bbq"),
+                japanese: $("#data_visualization_q6_content #japanese"),
+                two_choices: $("#data_visualization_q6_content #two_choices"),
+                teppanyaki: $("#data_visualization_q6_content #teppanyaki"),
+                delicacies: $("#data_visualization_q6_content #delicacies")
+            }
+            for(const dish in options){
+                options[dish].on('click', () => {
+                    for(const key in options){
+                        options[key].removeClass('active')
+                    }
+                    options[dish].addClass('active')
+                    data_visualization_socket.emit('q6', dish, (data) => {
+                        $("#np_3").empty()
+                        groupBarChart(data, "p_2", margin2, 900, color)
+                    })                     
+                })
+            }                             
         })
 
         for (const key in data_visualization_tabs) {
