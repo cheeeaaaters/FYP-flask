@@ -3,6 +3,7 @@ from flask_socketio import emit
 from .socketio_helper import bind_socketio
 from flask import render_template, url_for
 from app.DBModels import *
+from datetime import timedelta
 
 class DataVisualizationStep(Step):
 
@@ -313,5 +314,20 @@ class DataVisualizationStep(Step):
             counts[1][ml.vegetable]['count'] += 1
             counts[2][ml.meat]['count'] += 1
         return counts
-        
-  
+    
+    @bind_socketio('/data_visualization_step')
+    def q7(self):
+        l = []        
+        for i in range(10, 120, 10):
+            l.append({
+                'start': i,
+                'end': i + 10,
+                'count': 0
+            })        
+        for p in Pair.query.all():
+            delta = p.after_tray.date_time - p.before_tray.date_time
+            minutes = delta.total_seconds() / 60
+            index = int(minutes / 10) - 1
+            index = max(min(index, len(l) - 1),0)
+            l[index]['count'] += 1
+        return l

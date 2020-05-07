@@ -158,64 +158,45 @@ function groupBarChart(groups, id, margin, width, color) {
         .call(yAxis);
 }
 
-function barChart(data, id, margin, width, color) {
+function barChart(data, id, margin, width, height) {
 
-    var margin = { top: 20, right: 20, bottom: 70, left: 40 },
-        width = 600 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+    var y = d3.scaleLinear()
+        .range([height - margin.bottom, margin.top])
 
-    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-    var y = d3.scale.linear().range([height, 0]);
+    var x = d3.scaleBand()
+        .range([margin.left, width - margin.right])        
+        .padding(0.16)
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom")
-        .tickFormat(d => {console.log(d); return ""});
+    var xAxis = g => g
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).ticks(width / 100))
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left")
-        .ticks(10);
+    var yAxis = g => g
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).tickSizeOuter(0))
 
-    var svg = d3.select("body").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+    const svg = d3.select("#" + id)
+        .attr("width", width)
+        .attr("height", height);
 
-    x.domain(data.map(function (d) { return d.start; }));
+    x.domain(data.map(function (d) { return d.start + ' - ' + d.end; }));
     y.domain([0, d3.max(data, function (d) { return d.count; })]);
 
     svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
-        .selectAll("text")
-        .style("text-anchor", "end")
-        .attr("dx", "-.8em")
-        .attr("dy", "-.55em")
-        .attr("transform", "rotate(-90)");
+        .call(xAxis);
 
     svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Value ($)");
-
+        .call(yAxis);
+    
     svg.selectAll("bar")
         .data(data)
         .enter().append("rect")
         .style("fill", "steelblue")
-        .attr("x", function (d) { return x(d.start); })
-        .attr("width", x.rangeBand())
+        .attr("x", function (d) { return x(d.start + ' - ' + d.end); })
+        .attr("width", x.bandwidth())
         .attr("y", function (d) { return y(d.count); })
-        .attr("height", function (d) { return height - y(d.count); });
-
+        .attr("height", function (d) { return height - y(d.count) - margin.bottom; });
+    
 }
 
 function vslider(selector, handler) {
@@ -246,16 +227,19 @@ function vslider(selector, handler) {
 }
 
 function legion(data, selection, color) {
+
+    d3.select(selection)
+      .style('height', 10 + 50 * (data.length))
     var labels = d3.select(selection)
         .selectAll("g")
         .data(data)
         .enter()
         .append("g")
-        .attr("transform", (d, i) => "translate(0," + 50 * i + ")")
+        .attr("transform", (d, i) => "translate(10," + (10 + 50 * i) + ")")
 
     labels.append("circle")
         .attr("r", 5)
-        .attr("fill", name => color(name))
+        .attr("fill", (name, i) => color[i])
 
     labels.append("text")
         .attr("transform", "translate(20, 5)")

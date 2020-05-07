@@ -36,6 +36,7 @@ var data_visualization_socket = io('/data_visualization_step');
 
     var margin = { top: 30, right: 40, bottom: 0, left: 60 } 
     var margin2 =  { top: 30, right: 40, bottom: 0, left: 120 }   
+    var margin3 =  { top: 20, right: 20, bottom: 20, left: 20 } 
 
     var data_2 = [
         { name: 'bbq', before: 16, after: 4 },
@@ -44,7 +45,6 @@ var data_visualization_socket = io('/data_visualization_step');
         { name: 'japanese', before: 7, after: 4 },
         { name: 'japanese', before: 1, after: 8 }
     ]    
-
     
     var data_3 = [
         { name: 'bbq', count: 1 },
@@ -53,6 +53,12 @@ var data_visualization_socket = io('/data_visualization_step');
         { name: 'two_choices', count: 1 },
         { name: 'teppanyaki', count: 1 },
         { name: 'null', count: 1 },
+    ]
+
+    var data_4 = [
+        {start: "10", end: "20", count: 10},
+        {start: "20", end: "30", count: 15},
+        {start: "30", end: "40", count: 20},
     ]
     
     var vs, sp, dc;    
@@ -106,6 +112,7 @@ var data_visualization_socket = io('/data_visualization_step');
             q4: $("#data_visualization_q4_content"),
             q5: $("#data_visualization_q5_content"),
             q6: $("#data_visualization_q6_content"),
+            q7: $("#data_visualization_q7_content"),
         }
 
         var data_visualization_sb = {
@@ -312,6 +319,23 @@ var data_visualization_socket = io('/data_visualization_step');
                     })                     
                 })
             }                             
+        })
+
+        var q7_drawn =  false
+
+        $("#data_visualization_q7").on('click', () => {
+            for (const key in data_visualization_tabs) {
+                data_visualization_tabs[key].addClass('hidden')
+            }
+            data_visualization_tabs.q7.removeClass('hidden')
+            for (const key in data_visualization_sb) {
+                data_visualization_sb[key].addClass('hidden')
+            }                                  
+            data_visualization_socket.emit('q7', (data) => {
+                if (!q7_drawn)
+                    barChart(data, 't_1', margin3, 800, 400)
+                q7_drawn = true
+            })                                    
         })
 
         for (const key in data_visualization_tabs) {

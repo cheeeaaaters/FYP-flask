@@ -22,9 +22,9 @@ db = SQLAlchemy(app)
 #db.metadata.clear()
 #db.create_all()
 
-from app import DBManager
+#from app import DBManager
 
-'''
+
 from app import socketio_helper
 from app import DBModels
 from app import Step
@@ -46,4 +46,3 @@ from app import input_ocr
 
 print("hi")
 #exit()
-'''
