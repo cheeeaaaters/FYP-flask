@@ -37,6 +37,8 @@ from app import PairStep
 from app import MultiLabelStep
 from app import DataVisualizationStep
 
+from app import fs_helper
+
 socketio_helper.add_socketio()
 
 from app import UIManager

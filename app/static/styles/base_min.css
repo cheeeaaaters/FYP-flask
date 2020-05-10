@@ -86,6 +86,10 @@ nav img {
   height: 40px; 
 }
 
+#eye_button {
+  margin-right: 60px;
+}
+
 .db_container {
   display: flex;
   flex-grow: 1;

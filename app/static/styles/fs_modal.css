@@ -1,0 +1,45 @@
+.fs_modal_content{
+    background-color: #fefefe;
+    margin: 5% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    border-top: 20px solid black;
+    border-radius: 25px;
+    width: 50%; /* Could be more or less, depending on screen size */
+    display: flex;
+    flex-direction: column;     
+}
+
+.fs_checkbox{    
+    margin: 0 ! important;
+    margin-right: 20px ! important;
+}
+
+.fs_modal_button_container{
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.file_container{
+    display: flex;
+    align-items: center;
+    margin: 1px 0;
+}
+
+.files_container{
+    max-height: 400px;
+    overflow: scroll;
+}
+
+#backward_container{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+#backward_container img{
+    width: 30px;
+    height: 30px;
+}
+
+.fs_grey{
+    background-color: rgba(0, 0, 0, 0.1);
+}

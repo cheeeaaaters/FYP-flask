@@ -1,0 +1,13 @@
+<div class="fs_modal_content">     
+    <div id='backward_container'>
+        <a href='#' id="backward_button">
+            <img src="{{url_for('static', filename='icons/arrow-left.svg')}}" onload="fs_init()" onclick="go_back()"/>
+        </a>
+    </div>    
+    <div class='files_container'> 
+    </div>
+    <div class="fs_modal_button_container">
+        <button type="submit" class="fs_submit_button" onclick="fs_submit()">Submit</button>
+        <button type="submit" class="fs_cancel_button" onclick="fs_cancel()">Cancel</button>
+    </div>
+</div>

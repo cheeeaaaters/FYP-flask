@@ -103,7 +103,10 @@ def change_video(obj):
     return l
 
 @socketio.on('count', namespace='/ocr')
-def count(obj):        
+def count(obj):
+    if obj['mode'] == 'pair':
+        return Pair.query.count()
+
     if obj['all_area']:
         q = db.session.query(Tray)
     else:    

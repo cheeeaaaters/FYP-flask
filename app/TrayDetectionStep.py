@@ -8,12 +8,13 @@ from app.DBModels import Video, Tray
 from datetime import datetime
 import sys
 import os
+import time
 from app import globs
 from collections import defaultdict
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-#import object_tracker_4 as Yolo
+import object_tracker_4 as Yolo
 
 '''
     output = {
@@ -53,13 +54,16 @@ class TrayDetectionStep(Step):
                     
         # get the inputs
         # TODO: Optionally can make video also an input stream
+        #videos = Video.query.filter(Video.path.like('%'+'japanese'+'%')).filter(Video.trays == None).order_by(Video.path).all()
+        #videos2 = Video.query.filter(Video.path.like('%'+'choices'+'%')).filter(Video.trays == None).all()
         videos = Video.query.all()
-
+        aa = time.time()
         for video in videos:
+            print(video.path)
             # TODO: pass the input to yolov3
             # preresquisite: usage of yield
             # outputStream is a generator
-            outputStream = Yolo.process([video])
+            outputStream = Yolo.process([video], skip_frames=10)
             # outputStream = []
             (area, date_start, date_end) = self.convert_video(video)
             delta = date_end - date_start
@@ -94,7 +98,7 @@ class TrayDetectionStep(Step):
                     # emit('display', self.convert_to_json(tray), namespace='/tray_detection_step', callback=something)
                     # Example use case: when client internet dies, we may want to stop the process.
 
-                    #print("One Loop Pass")
+                    print("One Loop Pass")
 
                 else:
                     emit('display', tray, namespace='/tray_detection_step')
@@ -117,21 +121,25 @@ class TrayDetectionStep(Step):
                         same_tray.video = video
 
             db.session.commit()
+            print("ALL ", time.time() - aa)
                     
         #from app.UIManager import main_content_manager
         # main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
+        self.started = False
 
     # If you wish to add something to start...
-    def start(self):        
+    def start(self):
+        print("asdasd")        
         if self.started:            
             super().start()
         else:
-            count = 0
-            for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
-                for f in files:
-                    count += 1
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=count))   
+            n = Video.query.count()
+            if n == 0:
+                modal_manager.show(render_template('fs_modal.html'))
+                self.stop()
+            else:            
+                modal_manager.show(render_template('step_modal.html', num=n))   
      
     # If you wish to add something to stop...
     def stop(self):
@@ -184,22 +192,55 @@ class TrayDetectionStep(Step):
         return (area, date_start, date_end)
 
     @bind_socketio('/tray_detection_step')
-    def modal_status(self, status):
-        start = datetime(2019, 9, 10, 12)
-        end = datetime(2019, 9, 10, 3)
+    def modal_status(self, status):   
         if status['code'] != 0:
-            for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
+            '''
+            #for r, _, files in os.walk(os.path.join(path_to_yolo, 'data/videos')):
+            for r, _, files in os.walk('/home/ubuntu/data/fyp/video/recording_2019_09_10'):
                 for f in files:
-                    if Video.query.filter_by(path = os.path.join(r, f)).first() == None:                        
-                        print("Loaded video: " + os.path.join(r, f))
-                        v = Video(path = os.path.join(r, f))
-                        (area, date_start, date_end) = self.convert_video(v)
-                        if start <= date_start <= end:  
-                            print("Loaded video: " + os.path.join(r, f))                          
+                    if f.endswith(".mov"):
+                        if Video.query.filter_by(path = os.path.join(r, f)).first() == None:
+                            print("Loaded video: " + os.path.join(r, f))
+                            v = Video(path = os.path.join(r, f))
                             db.session.add(v)
                             db.session.commit() 
+            '''
+            '''
+            v = Video(path = "/home/ubuntu/data/fyp/video/recording_2019_09_10/bbq/cam_bbq-25680-25800.mov")
+            db.session.add(v)
+            db.session.commit()
+            '''
+            '''
+            start = datetime(2019, 9, 10, 12)
+            end = datetime(2019, 9, 10, 15)
+            for a in ['bbq', 'teppanyaki', 'main_return_area']:
+                for r, _, files in os.walk(os.path.join('/home/ubuntu/data/fyp/video/recording_2019_09_10', a)):
+                    for f in files:
+                        if f.endswith(".mov") and Video.query.filter_by(path = os.path.join(r, f)).first() == None:                        
+                            #print("Loaded video: " + os.path.join(r, f))
+                            v = Video(path = os.path.join(r, f))
+                            (area, date_start, date_end) = self.convert_video(v)
+                            if start <= date_start <= end:  
+                                print("Loaded video: " + os.path.join(r, f))                          
+                                db.session.add(v)
+                                db.session.commit() 
+            '''
+            for a in ['bbq']:
+                for r, _, files in os.walk(os.path.join('/home/ubuntu/data/fyp/video/recording_2019_10_10', a)):
+                    for f in files:
+                        if f.endswith(".mov") and Video.query.filter_by(path = os.path.join(r, f)).first() == None:                        
+                            print("Loaded video: " + os.path.join(r, f))
+                            v = Video(path = os.path.join(r, f))
+                            #(area, date_start, date_end) = self.convert_video(v)
+                            #if start <= date_start <= end:  
+                            #print("Loaded video: " + os.path.join(r, f))                          
+                            db.session.add(v)
+                            db.session.commit() 
+
             self.started = True
             self.start()
+        else:
+            self.stop()
             
     @bind_socketio('/tray_detection_step')
     def change_limit(self, val):        
