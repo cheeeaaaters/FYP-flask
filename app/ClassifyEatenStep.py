@@ -5,6 +5,7 @@ from .socketio_helper import bind_socketio
 from app import db
 from app.DBModels import Tray
 import sys, os
+import time
 from app import globs
 import eventlet
 
@@ -28,6 +29,11 @@ class ClassifyEatenStep(Step):
         self.coroutine = self.step_process()
         print("Classify Eaten Step Created")
 
+    def new_eaten(self, eaten, area):
+        if (area != 'main_return_area') and (area != 'side_return_area') and (area != 'side_return_area_2') and (area != 'teppanyaki'):
+            return False         
+        return eaten  
+
     def step_process(self):
         print("Start Process...")
         import eaten_main as Classifier 
@@ -35,26 +41,33 @@ class ClassifyEatenStep(Step):
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.filter_by(eaten=None).all()
+        #input_trays = query.filter_by(eaten=None).all()
+        input_trays = query.all()
         #input_trays = query.filter_by(ocr=None)        
 
         #TODO: pass the input to classifier        
         outputStream = Classifier.process(input_trays, backref=True)
         
+        start_time = time.time()
         #classifier returns information about the input image, and eaten
         #can be any form you feel convenient 
         for (input, info) in outputStream:
             #TODO: update the html, call js 
-            info['name'] = os.path.basename(input.path)
-            info['path'] = input.path
-            info["eaten"] = (info["preds"][0].item() == 1)
-            del info["preds"]
-            emit('display', info, namespace='/classify_eaten_step')
-            eventlet.sleep(0)
+            if info['preds'] != None:
+                info['name'] = os.path.basename(input.path)
+                info['path'] = input.path
+                info["eaten"] = (info["preds"][0].item() == 1)
+                del info["preds"]
+                emit('display', info, namespace='/classify_eaten_step')
+                eventlet.sleep(0)
+            
+                info["eaten"] = self.new_eaten(info["eaten"], input.area)
           
-            #TODO: update input using info
-            input.eaten = info["eaten"]
-            db.session.commit()
+                #TODO: update input using info
+                input.eaten = info["eaten"]
+                db.session.commit()
+            else:
+                emit('display', info, namespace='/classify_eaten_step')
 
             print("One Loop Pass")
             #It will wait on this yield statement
@@ -62,6 +75,7 @@ class ClassifyEatenStep(Step):
 
         #from app.UIManager import main_content_manager
         #main_content_manager.switch_to_step(globs.step_objects['ClassifyDishStep'])
+        print("ALL: ", time.time() - start_time)
 
     #If you wish to add something to start...
     def start(self): 
@@ -69,7 +83,7 @@ class ClassifyEatenStep(Step):
             super().start()
         else:
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(eaten=None).count()))   
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.count()))   
 
     #If you wish to add something to stop...
     def stop(self):
@@ -98,3 +112,5 @@ class ClassifyEatenStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()

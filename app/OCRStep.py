@@ -10,14 +10,14 @@ from app import globs
 import eventlet
 import shutil
 
-'''
-import count as Polling
-import demo as OCR
-import preprocessing as PreProcessing
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
 path_to_ocr = '/home/ubuntu/CanteenPreProcessing/OCR/main'
 sys.path.insert(1, path_to_ocr)
+'''
+import count as Polling
+import demo as OCR
+import preprocessing as PreProcessing
 '''
 
 class OCRStep(Step):
@@ -36,8 +36,8 @@ class OCRStep(Step):
         # get the inputs
         query = db.session.query(Tray)
         # TODO: Optional, may let user configure filter or not
-        #input_trays = query.all()
-        input_trays = query.filter_by(ocr=None).all()
+        input_trays = query.all()
+        #input_trays = query.filter_by(ocr=None).all()
 
         # TODO: pass the input to OCR
         # preprocessing.py
@@ -112,7 +112,7 @@ class OCRStep(Step):
             super().start()
         else:
             from app.UIManager import modal_manager            
-            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(ocr=None).count()))   
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.count()))   
 
     def stop(self):             
         super().stop()
@@ -132,6 +132,9 @@ class OCRStep(Step):
         emit('init_sb', namespace='/ocr_step')
 
     def clean_up(self):
+        for t in Tray.query.all():
+            t.ocr = None
+        db.session.commit()
         four_angles_path = os.path.join(path_to_yolo, "four_angles")
         ocr_text_path = os.path.join(path_to_yolo, "OCR_text")             
         try:
@@ -145,5 +148,8 @@ class OCRStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()
+
 
             

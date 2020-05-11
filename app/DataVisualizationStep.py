@@ -13,6 +13,14 @@ class DataVisualizationStep(Step):
         self.context["step_name"] = "data_visualization_step"
         self.q5_state = [True, False, False, False]
 
+    def no_dup(self):
+        f = SegmentationInfo.food(['rice', 'vegetable', 'meat'])
+        food_trays = db.session.query(Tray, f.label('food')).join(SegmentationInfo).subquery()  
+        a = db.session.query(food_trays.c.id, db.func.max(food_trays.c.food)).group_by(food_trays.c.video_id, food_trays.c.object_id).order_by(food_trays.c.id)
+        aa = a.subquery()
+        b = db.session.query(Tray).join(aa, Tray.id == aa.c.id)
+        return b
+
     #If you wish to add something to start...
     def start(self): 
         #Add something before calling super().start()
@@ -55,7 +63,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q1(self, dish):
-        data = Tray.query.filter(Tray.eaten == False, Tray.segmentation_info != None)
+        data = self.no_dup().filter(Tray.eaten == False, Tray.segmentation_info != None)
         if dish != 'all':
             data = data.filter(Tray.dish == dish)
         data = data.all()
@@ -74,7 +82,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q1_2(self, dish):
-        data = Tray.query.filter((Tray.eaten == False) & (Tray.segmentation_info != None))
+        data = self.no_dup().filter((Tray.eaten == False) & (Tray.segmentation_info != None))
         if dish != 'all':
             data = data.filter(Tray.dish == dish)
         data = data.all()
@@ -95,7 +103,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q2(self):
-        data = Tray.query.filter((Tray.eaten == False) & (Tray.dish != None)
+        data = self.no_dup().filter((Tray.eaten == False) & (Tray.dish != None)
         & (Tray.segmentation_info != None)).all()
         counts = [
             { 'name': 'bbq', 'count': [0, 0, 0] },
@@ -123,7 +131,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q2_2(self):
-        data = Tray.query.filter((Tray.eaten == False) & (Tray.dish != None)
+        data = self.no_dup().filter((Tray.eaten == False) & (Tray.dish != None)
         & (Tray.segmentation_info != None)).all()
         counts = [
             { 'name': 'bbq', 'count': [0, 0, 0, 0] },
@@ -150,7 +158,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q3(self, dish):   
-        data = Tray.query.filter(Tray.eaten == True, Tray.segmentation_info != None)
+        data = self.no_dup().filter(Tray.eaten == True, Tray.segmentation_info != None)
         if dish != 'all':
             data = data.filter(Tray.dish == dish)
         data = data.all()
@@ -172,7 +180,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q3_2(self, dish):
-        data = Tray.query.filter(Tray.eaten == True, Tray.segmentation_info != None)
+        data = self.no_dup().filter(Tray.eaten == True, Tray.segmentation_info != None)
         if dish != 'all':
             data = data.filter(Tray.dish == dish)
         data = data.all()
@@ -195,7 +203,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q4(self):
-        data = Tray.query.filter((Tray.eaten == True) & (Tray.dish != None)
+        data = self.no_dup().filter((Tray.eaten == True) & (Tray.dish != None)
         & (Tray.segmentation_info != None)).all()
         counts = [
             { 'name': 'bbq', 'count': [0, 0, 0, 0] },
@@ -223,7 +231,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q4_2(self):
-        data = Tray.query.filter((Tray.eaten == True) & (Tray.dish != None)
+        data = self.no_dup().filter((Tray.eaten == True) & (Tray.dish != None)
         & (Tray.segmentation_info != None)).all()
         counts = [
             { 'name': 'bbq', 'count': [0, 0, 0, 0, 0] },
@@ -287,7 +295,7 @@ class DataVisualizationStep(Step):
 
     @bind_socketio('/data_visualization_step')
     def q6(self, dish):
-        data = Tray.query.filter(Tray.eaten == True, Tray.multilabel_info != None)
+        data = self.no_dup().filter(Tray.eaten == True, Tray.multilabel_info != None)
         if dish != 'all':
             data = data.filter(Tray.dish == dish)
         data = data.all()

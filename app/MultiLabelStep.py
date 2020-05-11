@@ -40,7 +40,7 @@ class MultiLabelStep(Step):
     def step_process(self):
         print("Start Process...")
         import multilabel_main as Classifier 
-
+        self.clean_up()
         #get the inputs  
         '''      
         query = db.session.query(Pair)
@@ -49,7 +49,8 @@ class MultiLabelStep(Step):
                 & Pair.before_tray.has(Tray.dish != None)).all()
         #input_trays = query.filter_by(ocr == None)        
         '''
-        input_trays = Tray.query.filter(Tray.multilabel_info == None) 
+        #input_trays = Tray.query.filter(Tray.multilabel_info == None, Tray.eaten == True)
+        input_trays = Tray.query
 
         #TODO: pass the input to classifier        
         #outputStream = Classifier.process(input_pairs, backref=True)
@@ -79,49 +80,14 @@ class MultiLabelStep(Step):
             yield
 
         print("ALL: ", time.time() - start_time)
-        
-        '''
-        for (input, info) in outputStream:
-
-            json = {}
-            print(info)
-            
-            json["percentage"] = info["percentage"]
-            json["pair_id"] = input.id
-            json["before_path"] = input.before_tray.path
-            json["after_path"] = input.after_tray.path
-            json["infer_time"] = 0
-            json["before_label"] = []
-            json["after_label"] = []
-            for ba in ["before", "after"]:
-                mlinfo = MultiLabelInfo()
-                for food in ["rice", "vegetable", "meat"]:
-                    json["infer_time"] += info[ba + "_" + food + "_" + "infer_time"]
-                    pred = info[ba + "_" + food + "_" + "preds"]
-                    l = 0 if pred == None else pred[0].item()
-                    json[ba + "_label"].append(l)
-                    setattr(mlinfo, food, l)
-                getattr(input, ba + "_tray").multilabel_info = mlinfo
-                db.session.commit()
-
-            #TODO: update the html, call js 
-            emit('display', json, namespace='/multilabel_step')
-            eventlet.sleep(0)
-          
-            print("One Loop Pass")
-            #It will wait on this yield statement
-            yield
-        '''
 
     #If you wish to add something to start...
     def start(self): 
         if self.started:            
             super().start()
         else:
-            from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', 
-                num=Pair.query.filter(Pair.after_tray.has((Tray.multilabel_info == None) & (Tray.dish != None))
-                & Pair.before_tray.has(Tray.dish != None)).count()))         
+            from app.UIManager import modal_manager 
+            modal_manager.show(render_template('step_modal.html',num=Tray.query.count()))
 
     #If you wish to add something to stop...
     def stop(self):
@@ -141,9 +107,8 @@ class MultiLabelStep(Step):
         emit('init_sb', namespace='/multilabel_step')
 
     def clean_up(self):
-        for p in Pair.query.all():
-            p.before_tray.multilabel_info = None
-            p.after_tray.multilabel_info = None
+        for t in Tray.query.all():
+            t.multilabel_info = None
         MultiLabelInfo.query.delete()
         db.session.commit()        
 
@@ -152,3 +117,5 @@ class MultiLabelStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()

@@ -7,12 +7,16 @@ from app.DBModels import Tray, SegmentationInfo
 import sys, os
 import eventlet
 import shutil
+import time
 
 path_to_seg = "/home/ubuntu/FYPSeg"
 sys.path.insert(1, path_to_seg)
 sys.path.insert(1, "/home/ubuntu")
-#import detect as Seg
-#import FYPSeg
+
+'''
+import detect as Seg
+import FYPSeg
+'''
 
 class SegmentationStep(Step):
 
@@ -22,39 +26,51 @@ class SegmentationStep(Step):
         self.context["step_name"] = "segmentation_step"
         self.coroutine = self.step_process()
         self.model = 'HRNet'
-        print("Segmentation Step Created")
+        print("Segmentation Step Created")        
 
     def step_process(self):
-        print("Start Process...")        
-
+        print("Start Process...") 
+        import detect as Seg
+        import FYPSeg 
+        self.clean_up()
+        
         #get the inputs      
-        input_trays = Tray.query.filter_by(segmentation_info=None)      
+        #input_trays = Tray.query.filter(Tray.segmentation_info == None, Tray.eaten != None)    
+        input_trays = Tray.query  
 
         #TODO: pass the input to model        
         outputStream = Seg.process(input_trays, model=self.model, backref=True)
         
         #The model returns information about the input image, segmentation image, pixel count...
         #can be any form you feel convenient 
+        start_time = time.time()
         for (input, info) in outputStream:
-            #TODO: update the html, call js 
-            info['orig'] = input.path
-            emit('display', info, namespace='/segmentation_step')
-            eventlet.sleep(0)
+            #TODO: update the html, call js
+            if info['mask'] != None: 
+                info['orig'] = input.path
+                emit('display', info, namespace='/segmentation_step')
+                eventlet.sleep(0)
             
-            #TODO: update input using info
-            segmentation_info = SegmentationInfo(segmentation_path=info["mask"]
+                #TODO: update input using info
+                segmentation_info = SegmentationInfo(segmentation_path=info["mask"]
                                                 ,total=info["pc_total"]
                                                 ,rice=info["pc_1"]
                                                 ,vegetable=info["pc_2"]
                                                 ,meat=info["pc_3"]
                                                 ,other=info["pc_4"])
-            input.segmentation_info = segmentation_info
-            db.session.add(segmentation_info)
-            db.session.commit()
+                input.segmentation_info = segmentation_info
+                db.session.add(segmentation_info)
+                db.session.commit()
 
-            print("One Loop Pass")
-            #It will wait on this yield statement
-            yield
+                print("One Loop Pass")
+                #It will wait on this yield statement
+                yield
+            else:
+                info['orig'] = None
+                emit('display', info, namespace='/segmentation_step')
+                yield
+
+        print("ALL: ", time.time() - start_time)
 
     # If you wish to add something to start...
     def start(self):
@@ -62,7 +78,7 @@ class SegmentationStep(Step):
             super().start()
         else:
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(segmentation_info=None).count()))
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.count()))
 
     # If you wish to add something to stop...
     def stop(self):
@@ -86,10 +102,6 @@ class SegmentationStep(Step):
             t.segmentation_info = None
         SegmentationInfo.query.delete()
         db.session.commit()
-        try:
-            shutil.rmtree(os.path.join(path_to_seg, "outputs"))            
-        except OSError as e:
-            print("Error removing directory")
 
     #TODO select model to use
     @bind_socketio('/segmentation_step')
@@ -106,3 +118,5 @@ class SegmentationStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()

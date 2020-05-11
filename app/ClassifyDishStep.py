@@ -29,6 +29,21 @@ class ClassifyDishStep(Step):
         self.coroutine = self.step_process()
         print("Classify Dish Step Created")
 
+    def new_dish(self, eaten, area, dish):
+        if (area != 'main_return_area') and (area != 'side_return_area') and (area != 'side_return_area_2') and (area != 'teppanyaki'):
+            return area 
+        elif area == 'teppanyaki':
+            if eaten:
+                return dish
+            else:
+                return 'teppanyaki'
+        else:
+            if eaten:
+                return dish
+            else:
+                return None
+        return None
+
     def step_process(self):
         print("Start Process...")
         import dish_main as Classifier 
@@ -36,7 +51,8 @@ class ClassifyDishStep(Step):
         #get the inputs        
         query = db.session.query(Tray)
         #TODO: Optional, may let user configure filter or not
-        input_trays = query.filter_by(dish=None).all()   
+        #input_trays = query.filter_by(dish=None).all()   
+        input_trays = query.all()
         #input_trays = query.filter_by(ocr=None)        
 
         #TODO: pass the input to classifier        
@@ -55,6 +71,7 @@ class ClassifyDishStep(Step):
             #emit('display', self.convert_to_json(input), namespace='/classify_dish_step', callback=something)
 
             #TODO: update input using info
+            input['dish'] = self.new_dish(input.eaten, input.area, input['dish'])
             input.dish = info["dish"]
             db.session.commit()
 
@@ -71,7 +88,7 @@ class ClassifyDishStep(Step):
             super().start()
         else:
             from app.UIManager import modal_manager
-            modal_manager.show(render_template('step_modal.html', num=Tray.query.filter_by(dish=None).count()))
+            modal_manager.show(render_template('step_modal.html', num=Tray.query.count()))
 
     #If you wish to add something to stop...
     def stop(self):
@@ -100,3 +117,5 @@ class ClassifyDishStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()

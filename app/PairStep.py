@@ -47,15 +47,13 @@ class PairStep(Step):
             check1 = (not self.state[0]) or (labels[k2] == 'E' and labels[k1] == 'U')
             diff_time = avg_time(intervals[k2])-avg_time(intervals[k1])
             #print(check1)
-            check2 = check1 #and (self.eat_min <= diff_time) and (diff_time <= self.eat_max)
+            check2 = check1 and (self.eat_min <= diff_time) and (diff_time <= self.eat_max)
             #print(check2)
             check3 = check2 and ((not self.state[1]) or ((area(intervals[k2]) == 'return_area') and (
                 area(intervals[k1]) == 'non_return_area')))
             #print(check3)
             check4 = check3 and ((not self.state[2]) or (
                 dish(intervals[k2]) == dish(intervals[k1])))
-            if not check4:
-                print(dish(intervals[k2]), dish(intervals[k1]))
             #print(check4)
             return check4
 
@@ -212,3 +210,6 @@ class PairStep(Step):
         if status['code'] != 0:
             self.started = True
             self.start()
+        else:
+            self.stop()
+

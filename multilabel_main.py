@@ -42,7 +42,7 @@ def process(trays, backref=False):
             "rice_infer_time": 0,
             "vegetable_infer_time": 0,
             "meat_infer_time": 0,            
-            "percentage": 0
+            "percentage": (i + 1)/len(trays)
         }
 
         try:

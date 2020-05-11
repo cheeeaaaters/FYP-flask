@@ -22,15 +22,24 @@ def get_fs(path):
 
 
 @socketio.on('submit', namespace='/fs')
-def fs_submit(paths):
+def fs_submit(p):
     try:
         count = 0
-        for p in paths:
-            if(Video.query.filter_by(path = p).first() == None):
-                count += 1
-                v = Video(path = p)
-                db.session.add(v)
-                db.session.commit()
+        if os.path.isdir(p):
+            for r, _, files in os.walk(p):
+                for f in files:
+                    if f.endswith(".mov") and Video.query.filter_by(path = os.path.join(r, f)).first() == None:                        
+                        #print("Loaded video: " + os.path.join(r, f))
+                        v = Video(path = os.path.join(r, f))                            
+                        print("Loaded video: " + os.path.join(r, f))                          
+                        db.session.add(v)
+                        db.session.commit()
+                        count += 1 
+        elif p.endswith(".mov") and (Video.query.filter_by(path = p).first() == None):
+            count += 1
+            v = Video(path = p)
+            db.session.add(v)
+            db.session.commit()
         return count
     except:
         return -1

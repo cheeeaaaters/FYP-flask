@@ -76,19 +76,19 @@ function load_selected_directories(root, cb, selectAll) {
         if (!key.startsWith('_') && (root[key]._type == 'dir') && (selectAll || root[key]._selected) && !(root[key]._loaded)) {
             flags[key] = false
         }
-    }    
+    }
     if (Object.keys(flags).length === 0) {
         cb()
         return
-    }    
+    }
     //let is important
     for (let key in root) {
         if (!key.startsWith('_')) {
             if ((root[key]._type == 'dir') && (selectAll || root[key]._selected) && !(root[key]._loaded)) {
-                fs_socket.emit('get_fs', root[key]._path, (files) => {                  
+                fs_socket.emit('get_fs', root[key]._path, (files) => {
                     update_tree_2(files, root, root[key])
                     load_selected_directories(root[key], () => {
-                        flags[key] = true                        
+                        flags[key] = true
                         root[key]._loaded = true
                         if (isAllTrue(flags)) {
                             cb()
@@ -116,24 +116,34 @@ function collect_selected_files(root, selectAll) {
                 }
             }
             else if (selectAll || root[key]._selected) {
-                l.push(root[key]._path)                
+                l.push(root[key]._path)
             }
         }
     }
     return l
 }
 
+function submit_tree(root) {
+    let count = 0
+    for (var key of root) {
+        if (!key.startsWith('_')) {
+            if (root[key]._selected) {
+                fs_socket.emit('submit', root[key]._path, (code) => {
+                    count += code
+                })
+            }
+            else {
+                if (root[key]._loaded){
+                    count += submit_tree(root[key])
+                }               
+            }
+        }
+    }
+    return count 
+}
+
 function fs_submit() {
-    load_selected_directories(fs_tree, () => {
-        fs_socket.emit('submit', collect_selected_files(fs_tree, false), (code) => {
-            if (code != -1){
-                alert(code + " additional videos loaded into database!")
-            }
-            else{
-                alert("some errors happen...")
-            }
-        })        
-    })
+    submit_tree(fs_tree)
 }
 
 function fs_cancel() {

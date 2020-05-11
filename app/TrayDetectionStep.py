@@ -14,7 +14,7 @@ from collections import defaultdict
 
 path_to_yolo = '/home/ubuntu/CanteenPreProcessing'
 sys.path.insert(1, path_to_yolo)
-import object_tracker_4 as Yolo
+#import object_tracker_4 as Yolo
 
 '''
     output = {
@@ -45,11 +45,14 @@ class TrayDetectionStep(Step):
 
         def limit_buffer(buf):
             for obj_id in buf:
-                if len(buf[obj_id]) > self.limit:                    
-                    step = (len(buf[obj_id]) - 1) / (self.limit - 1)
+                if len(buf[obj_id]) > self.limit:
                     b = []
-                    for i in range(self.limit):
-                        b.append(buf[obj_id][int(i*step)])
+                    if self.limit > 1:                    
+                        step = (len(buf[obj_id]) - 1) / (self.limit - 1)                        
+                        for i in range(self.limit):
+                            b.append(buf[obj_id][int(i*step)])                        
+                    else:
+                        b.append(buf[obj_id][len(buf[obj_id]) // 2])
                     buf[obj_id] = b
                     
         # get the inputs
@@ -122,7 +125,8 @@ class TrayDetectionStep(Step):
 
             db.session.commit()
             print("ALL ", time.time() - aa)
-                    
+        
+        emit('display', {'path': None, 'percentage': 1}, namespace='/tray_detection_step')
         #from app.UIManager import main_content_manager
         # main_content_manager.switch_to_step(globs.step_objects['OCRStep'])
         self.started = False
@@ -244,4 +248,4 @@ class TrayDetectionStep(Step):
             
     @bind_socketio('/tray_detection_step')
     def change_limit(self, val):        
-        self.limit = val
+        self.limit = int(val)

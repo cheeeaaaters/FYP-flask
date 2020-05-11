@@ -1,4 +1,5 @@
 from app import db
+from sqlalchemy.ext.hybrid import hybrid_method
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +50,14 @@ class SegmentationInfo(db.Model):
 
     def __repr__(self):
         return '<segmentation> %r' % self.segmentation_path
+
+    @hybrid_method
+    def food(self, fields):
+        return sum(getattr(self, field) for field in fields)
+
+    @food.expression
+    def food(cls, fields):
+        return sum(getattr(cls, field) for field in fields)
 
 class MultiLabelInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
