@@ -34,7 +34,7 @@ def send_file(
 
     if isinstance(filename_or_fp, str):
         filename = filename_or_fp
-        filename = '/' + filename
+        #filename = '/' + filename
         #if not os.path.isabs(filename):
             #filename = os.path.join(current_app.root_path, filename)
         file = None

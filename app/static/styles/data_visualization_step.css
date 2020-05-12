@@ -101,3 +101,14 @@
     color: #aaa;
     margin-left: 20px
 }
+
+.popup {
+    position: absolute;
+    display: none;
+    background-color: aliceblue;    
+    border: 2px solid cyan;
+    border-radius: 20px;
+    padding: 20px;
+}
+  
+

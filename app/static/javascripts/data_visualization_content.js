@@ -79,7 +79,7 @@ var data_visualization_socket = io('/data_visualization_step');
                     $("#p_1").empty()
                     $("#donut_1").empty()
                     console.log(data)                    
-                    sp = scatterPlot(data, "p_1", 600, 600)                   
+                    sp = scatterPlot(data, "p_1", 600, 600, "food after (%)", "food before (%)")                   
                     dc = donut_chart("#donut_1", data_3)
                     sp.set_filtered_list_change((fl) => {
                         data_3.forEach(d => d.count = 0)
@@ -267,7 +267,7 @@ var data_visualization_socket = io('/data_visualization_step');
             data_visualization_socket.emit('q5', (data) => {
                 $("#p_1").empty()
                 $("#donut_1").empty()
-                sp = scatterPlot(data, "p_1", 600, 600)                   
+                sp = scatterPlot(data, "p_1", 600, 600, "food after (%)", "food before (%)")                   
                 dc = donut_chart("#donut_1", data_3)
                 sp.set_filtered_list_change((fl) => {
                     data_3.forEach(d => d.count = 0)
@@ -333,7 +333,7 @@ var data_visualization_socket = io('/data_visualization_step');
             }                                  
             data_visualization_socket.emit('q7', (data) => {
                 if (!q7_drawn)
-                    barChart(data, 't_1', margin3, 800, 400)
+                    barChart(data, 't_1', margin3, 800, 500, "Eating Duration (10 minutes interval)", "Pair Count")
                 q7_drawn = true
             })                                    
         })

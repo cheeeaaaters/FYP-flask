@@ -156,15 +156,19 @@ function groupBarChart(groups, id, margin, width, color) {
 
     svg.append("g")
         .call(yAxis);
+
 }
 
-function barChart(data, id, margin, width, height) {
+function barChart(data, id, margin, width, height, xtext, ytext) {
+
+    margin.bottom += 40
+    margin.left += 40
 
     var y = d3.scaleLinear()
         .range([height - margin.bottom, margin.top])
 
     var x = d3.scaleBand()
-        .range([margin.left, width - margin.right])        
+        .range([margin.left, width - margin.right])
         .padding(0.16)
 
     var xAxis = g => g
@@ -185,9 +189,22 @@ function barChart(data, id, margin, width, height) {
     svg.append("g")
         .call(xAxis);
 
+    svg.append("text")
+        .attr("transform", "translate(" + (margin.left + ((width - margin.left - margin.right) / 2)) + " ," + (height - margin.bottom + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text(xtext);
+
     svg.append("g")
         .call(yAxis);
-    
+
+    svg.append("text")
+        .attr("y", 0)
+        .attr("x", 0)
+        .attr("transform", "translate(" + 0 + " ," + (((height - margin.top - margin.bottom) / 2) + margin.top) + ")" + " rotate(-90)")
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text(ytext);
+
     svg.selectAll("bar")
         .data(data)
         .enter().append("rect")
@@ -196,7 +213,7 @@ function barChart(data, id, margin, width, height) {
         .attr("width", x.bandwidth())
         .attr("y", function (d) { return y(d.count); })
         .attr("height", function (d) { return height - y(d.count) - margin.bottom; });
-    
+
 }
 
 function vslider(selector, handler) {
@@ -229,7 +246,7 @@ function vslider(selector, handler) {
 function legion(data, selection, color) {
 
     d3.select(selection)
-      .style('height', 10 + 50 * (data.length))
+        .style('height', 10 + 50 * (data.length))
     var labels = d3.select(selection)
         .selectAll("g")
         .data(data)
@@ -256,14 +273,23 @@ function legion(data, selection, color) {
         .attr("y2", 0)
 }
 
-function scatterPlot(data, id, width, height) {
+function scatterPlot(data, id, width, height, xtext, ytext) {
 
     data.forEach(d => { d.percent = 100 * d.after / (d.before + 0.00001) })
     var filtered_list = []
 
     var svg = d3.select("#" + id)
-        .attr("width", width * 1.3)
-        .attr("height", height);
+        .attr("width", width * 1.3 + 40)
+        .attr("height", height + 40);
+
+    var popup = d3.select(".p_1_parent")
+        .append("div")
+        .attr("class", "popup") 
+    
+    popup.on('click', () => {
+        popup.style("display", "none")
+    })
+
     margin = 40
 
     xmax = d3.max(data, d => d.after)
@@ -273,7 +299,7 @@ function scatterPlot(data, id, width, height) {
     // Add X axis
     var x = d3.scaleLinear()
         .domain([0, xymax])
-        .range([margin, width - margin]);
+        .range([margin + 40, width - margin]);
 
     svg.append("g")
         .attr("transform", "translate(0," + (height - margin) + ")")
@@ -285,8 +311,21 @@ function scatterPlot(data, id, width, height) {
         .range([height - margin, margin]);
 
     svg.append("g")
-        .attr("transform", "translate(" + margin + ",0)")
+        .attr("transform", "translate(" + (margin + 40) + ",0)")
         .call(d3.axisLeft(y));
+
+    svg.append("text")
+        .attr("transform", "translate(" + (10 + (width / 2)) + " ," + (height + 10) + ")")
+        .style("text-anchor", "middle")
+        .text(xtext);
+
+    svg.append("text")
+        .attr("y", 0)
+        .attr("x", 0)
+        .attr("transform", "translate(" + 0 + " ," + (height / 2) + ")" + " rotate(-90)")
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text(ytext);                      
 
     // Color scale: give me a specie name, I return a color
     var color = d3.scaleOrdinal()
@@ -343,6 +382,18 @@ function scatterPlot(data, id, width, height) {
         .style("fill", "lightgrey")
         .on("mouseover", highlight)
         .on("mouseleave", doNotHighlight)
+        .on("click", (d, i, n) => {             
+            var popup = d3.select(".popup")                 
+                .style("margin-top", y(d.before) + "px")
+                .style("margin-left", x(d.after) + "px")
+                .style("display", "inline-block")
+            
+            popup.selectAll("img")
+                    .data([d.before_img, d.before_mask, d.after_img, d.after_mask])
+                    .join("img")
+                    .attr("src", p => '/my_images/' + p)
+                    .attr("width", 100)
+        })
 
     var panel = svg.append("g")
         .attr("transform", "translate(" + (margin + width) + "," + margin + ")")

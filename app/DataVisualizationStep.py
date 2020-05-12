@@ -289,6 +289,10 @@ class DataVisualizationStep(Step):
                 if self.q5_state[3]:
                     obj['before'] += c1
                     obj['after'] += c2
+            obj['before_img'] = p.before_tray.path
+            obj['before_mask'] = p.before_tray.segmentation_info.segmentation_path
+            obj['after_img'] = p.after_tray.path
+            obj['after_mask'] = p.after_tray.segmentation_info.segmentation_path
             l.append(obj)
 
         return l  
